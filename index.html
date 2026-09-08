@@ -2000,6 +2000,19 @@ Johor Darul Ta'zim.</textarea>
                         </div>
                     </div>
 
+                    <!-- GEMINI AI BACKEND CONFIG -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 md:col-span-2">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b pb-2">
+                            <div><h3 class="font-bold text-slate-800 text-sm">Gemini AI melalui Backend Selamat</h3><p class="text-[11px] text-slate-500 mt-1">API Key Gemini tidak disimpan dalam HTML. Masukkan URL endpoint backend anda sahaja.</p></div>
+                            <span id="geminiBackendStatus" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-[11px] font-semibold whitespace-nowrap"><span class="w-2 h-2 rounded-full bg-red-500"></span> 🔴 Perlu dibuat</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2 items-end">
+                            <div><label class="block text-xs font-semibold text-slate-600 mb-1">URL Backend Gemini</label><input type="url" value="https://disposa-gemini-api.khazpensive.workers.dev/" id="set_gemini_backend_url" class="w-full px-3 py-2 text-sm border rounded-lg" placeholder="https://.../api/gemini-analyze"></div>
+                            <button type="button" onclick="testGeminiBackend()" class="px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition"><i class="fa-solid fa-plug-circle-check mr-1"></i> Uji Sambungan</button>
+                        </div>
+                        <div class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[11px] text-amber-800"><strong>Keselamatan:</strong> Jangan masukkan Gemini API Key di sini. Simpan API Key sebagai secret/environment variable pada backend seperti Firebase Functions, Cloud Run atau server sendiri.</div>
+                    </div>
+
                     <!-- BACKUP & GOOGLE CONFIG -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 md:col-span-2">
                         <h3 class="font-bold text-slate-800 text-sm border-b pb-2">Sandaran Data & Integrasi Cloud (Google Suite)</h3>
@@ -2024,8 +2037,8 @@ Johor Darul Ta'zim.</textarea>
 
     <!-- MODAL: ADD / EDIT BOOK -->
     <div id="bookModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden no-print">
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden animate-fade-in max-h-[92vh] overflow-y-auto">
+            <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center sticky top-0 z-10">
                 <h3 id="bookModalTitle" class="font-bold">Tambah Rekod Buku Baru</h3>
                 <button onclick="closeBookModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -2097,6 +2110,13 @@ Johor Darul Ta'zim.</textarea>
                         <label class="font-semibold block mb-1">Lokasi / Rak</label>
                         <input type="text" id="bm_lokasi" class="w-full px-3 py-2 border rounded-lg" placeholder="Bilik SPBT - Rak A2">
                     </div>
+                </div>
+
+                <div class="rounded-xl border border-violet-200 bg-violet-50 p-3 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div><div class="font-bold text-violet-900"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Bantuan Gemini AI</div><div class="text-[11px] text-violet-700 mt-0.5">Kenal pasti jenis bahan, kategori, format dan tentukan pelupusan yang sesuai mengikut Borang Arkib 8/08, 9/08 atau 10/08.</div></div><span id="geminiAiFeatureStatus" class="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap">🔴 Selepas API</span></div>
+                    <div><label class="font-semibold block mb-1 text-slate-700">Maklumat untuk dianalisis AI</label><textarea id="bm_ai_input" rows="2" class="w-full px-3 py-2 border border-violet-200 rounded-lg bg-white" placeholder="Contoh: majalah sekolah 2024, buku teks rosak, risalah program, laporan tahunan..."></textarea></div>
+                    <div class="flex flex-wrap gap-2"><button type="button" id="geminiAnalyzeBtn" onclick="analyzeBookWithGemini()" class="px-3 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-semibold"><i class="fa-solid fa-sparkles mr-1"></i> Analisis AI</button><button type="button" onclick="applyGeminiSuggestion()" id="geminiApplyBtn" class="hidden px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold"><i class="fa-solid fa-check mr-1"></i> Guna Cadangan</button></div>
+                    <div id="geminiSuggestionBox" class="hidden rounded-lg bg-white border border-violet-200 p-3 text-[11px] text-slate-700"></div>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-4 border-t">
@@ -2424,7 +2444,7 @@ Johor Darul Ta'zim.</textarea>
         // --- FIREBASE CONFIG ---
         // Gantikan nilai di bawah dengan config Web App dari Firebase Console.
         const firebaseConfig = {
-           apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
+             apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
   authDomain: "disposa-book.firebaseapp.com",
   projectId: "disposa-book",
   storageBucket: "disposa-book.firebasestorage.app",
@@ -2900,6 +2920,14 @@ Johor Darul Ta'zim.</textarea>
         }
 
         function openBookModal(bookId = null) {
+            geminiLastSuggestion = null;
+            const aiInput = document.getElementById('bm_ai_input');
+            const aiBox = document.getElementById('geminiSuggestionBox');
+            const aiApply = document.getElementById('geminiApplyBtn');
+            if (aiInput) aiInput.value = '';
+            if (aiBox) { aiBox.classList.add('hidden'); aiBox.innerHTML = ''; }
+            if (aiApply) aiApply.classList.add('hidden');
+            updateGeminiUiStatus();
             document.getElementById('bookForm').reset();
             if (bookId) {
                 const book = booksData.find(b => b.id === bookId);
@@ -3734,6 +3762,9 @@ Johor Darul Ta'zim.</textarea>
             document.getElementById('set_jawatan_pegawai').value = settingsData.jawatanPegawai || '';
             document.getElementById('set_nama_saksi').value = settingsData.namaSaksi || '';
             document.getElementById('set_jawatan_saksi').value = settingsData.jawatanSaksi || '';
+            const geminiUrlEl = document.getElementById('set_gemini_backend_url');
+            if (geminiUrlEl) geminiUrlEl.value = settingsData.geminiBackendUrl || '';
+            updateGeminiUiStatus();
         }
 
         function saveSettingsForm() {
@@ -3746,9 +3777,11 @@ Johor Darul Ta'zim.</textarea>
                 namaPegawai: document.getElementById('set_nama_pegawai').value,
                 jawatanPegawai: document.getElementById('set_jawatan_pegawai').value,
                 namaSaksi: document.getElementById('set_nama_saksi').value,
-                jawatanSaksi: document.getElementById('set_jawatan_saksi').value
+                jawatanSaksi: document.getElementById('set_jawatan_saksi').value,
+                geminiBackendUrl: (document.getElementById('set_gemini_backend_url')?.value || '').trim()
             };
             localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settingsData));
+            updateGeminiUiStatus();
             showToast('✅ Tetapan sistem berjaya disimpan.');
             addActivityLog('Mengemas kini tetapan profil jabatan.');
         }
@@ -3803,6 +3836,198 @@ Johor Darul Ta'zim.</textarea>
 
         function closeGoogleInfoModal() {
             document.getElementById('googleModal').classList.add('hidden');
+        }
+
+        // --- GEMINI AI VIA SECURE BACKEND ---
+        let geminiLastSuggestion = null;
+
+        function getGeminiBackendUrl() {
+            const uiValue = document.getElementById('set_gemini_backend_url')?.value?.trim();
+            return uiValue || settingsData.geminiBackendUrl || '';
+        }
+
+        function updateGeminiUiStatus(connected = null) {
+            const url = getGeminiBackendUrl();
+            const backendStatus = document.getElementById('geminiBackendStatus');
+            const featureStatus = document.getElementById('geminiAiFeatureStatus');
+            if (backendStatus) {
+                if (connected === true) { backendStatus.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold whitespace-nowrap'; backendStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 🟢 Backend bersambung'; }
+                else if (url) { backendStatus.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold whitespace-nowrap'; backendStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> 🟠 Belum diuji'; }
+                else { backendStatus.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-[11px] font-semibold whitespace-nowrap'; backendStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span> 🔴 Perlu dibuat'; }
+            }
+            if (featureStatus) { featureStatus.textContent = connected === true ? '🟢 AI tersedia' : (url ? '🟠 Sedia untuk diuji' : '🔴 Selepas API'); }
+        }
+
+        async function getGeminiAuthHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            try { if (auth && auth.currentUser && typeof auth.currentUser.getIdToken === 'function') { const token = await auth.currentUser.getIdToken(); if (token) headers['Authorization'] = 'Bearer ' + token; } } catch (e) { console.warn('Token Firebase tidak dapat diperoleh:', e); }
+            return headers;
+        }
+
+        async function testGeminiBackend() {
+            const url = getGeminiBackendUrl();
+            if (!url) { showToast('⚠️ Masukkan URL Backend Gemini dahulu.', 'warning'); updateGeminiUiStatus(false); return; }
+            try { const headers = await getGeminiAuthHeaders(); const response = await fetch(url, { method:'POST', headers, body:JSON.stringify({action:'health',source:'DISPORA_BOOK'}) }); if (!response.ok) throw new Error('HTTP ' + response.status); updateGeminiUiStatus(true); showToast('✅ Backend Gemini berjaya dihubungi.'); }
+            catch (error) { console.error(error); updateGeminiUiStatus(false); showToast('❌ Sambungan backend Gemini gagal: ' + (error.message || 'Ralat tidak diketahui'), 'error'); }
+        }
+
+        function normalizeGeminiSuggestion(data) {
+            const root = data?.result || data?.data || data?.suggestion || data || {};
+            const formRaw = String(root.borang_arkib || root.borangArkib || root.recommended_form || root.form || '').toUpperCase();
+            let borangArkib = '';
+            if (formRaw.includes('8')) borangArkib = '8/08';
+            else if (formRaw.includes('9')) borangArkib = '9/08';
+            else if (formRaw.includes('10')) borangArkib = '10/08';
+            return {
+                jenisBahan: root.jenis_bahan || root.jenisBahan || root.material_type || root.type || '',
+                kategori: root.kategori || root.category || '',
+                format: root.format || root.format_bahan || root.material_format || '',
+                cadanganPerekodan: root.cadangan_perekodan || root.cadanganPerekodan || root.recording_suggestion || root.cadangan || '',
+                borangArkib,
+                alasanBorang: root.alasan_borang || root.alasanBorang || root.form_reason || root.reason || '',
+                cadanganPelupusan: root.cadangan_pelupusan || root.cadanganPelupusan || root.disposal_suggestion || 'Musnah',
+                sebabPelupusan: root.sebab_pelupusan || root.sebabPelupusan || root.disposal_reason || '',
+                perihal: root.perihal || root.description || root.record_description || '',
+                noRujukan: root.no_rujukan || root.noRujukan || root.reference_no || '',
+                tarikh: root.tarikh || root.date || root.tahun || root.year || '',
+                unitRekod: root.unit_rekod || root.unitRekod || root.record_units || '1',
+                sistemAplikasi: root.sistem_aplikasi || root.sistemAplikasi || root.application_system || '',
+                saizBit: root.saiz_bit || root.saizBit || root.size_bits || root.digital_size || '',
+                jenisMedia: root.jenis_media || root.jenisMedia || root.media_type || '',
+                jumlahMedia: root.jumlah_media || root.jumlahMedia || root.media_units || '1',
+                lokasiRekod: root.lokasi_rekod || root.lokasiRekod || root.record_location || '',
+                keadaanMedia: root.keadaan_media || root.keadaanMedia || root.media_condition || '',
+                tajukCadangan: root.tajuk_cadangan || root.tajukCadangan || root.title || '',
+                penulis: root.penulis || root.author || '',
+                penerbit: root.penerbit || root.publisher || '',
+                tahun: root.tahun || root.year || '',
+                isbn: root.isbn || root.ISBN || ''
+            };
+        }
+
+        async function analyzeBookWithGemini() {
+            const url = getGeminiBackendUrl();
+            if (!url) { showToast('⚠️ Tetapkan URL Backend Gemini di Tetapan Sistem dahulu.', 'warning'); return; }
+            const btn = document.getElementById('geminiAnalyzeBtn');
+            const sourceText = document.getElementById('bm_ai_input')?.value?.trim() || '';
+            const payload = {
+                action: 'analyze_material_for_archive_disposal',
+                source: 'DISPORA_BOOK',
+                input: sourceText,
+                current_record: {
+                    tajuk: document.getElementById('bm_tajuk')?.value || '',
+                    penulis: document.getElementById('bm_penulis')?.value || '',
+                    penerbit: document.getElementById('bm_penerbit')?.value || '',
+                    tahun: document.getElementById('bm_tahun')?.value || '',
+                    isbn: document.getElementById('bm_isbn')?.value || '',
+                    kategori: document.getElementById('bm_kategori')?.value || '',
+                    keadaan: document.getElementById('bm_keadaan')?.value || '',
+                    lokasi: document.getElementById('bm_lokasi')?.value || ''
+                },
+                archive_forms: {
+                    '8/08': 'Rekod Pandang Dengar',
+                    '9/08': 'Rekod Terbitan dan Bahan Bercetak',
+                    '10/08': 'Rekod Elektronik'
+                },
+                instruction: 'Pilih SATU borang Arkib yang paling sesuai antara 8/08, 9/08 dan 10/08. Beri alasan ringkas dan cadangkan nilai medan pelupusan yang relevan. Jangan mereka maklumat yang tidak dapat dikenal pasti.',
+                expected_output: [
+                    'jenis_bahan','kategori','format','cadangan_perekodan','borang_arkib','alasan_borang',
+                    'cadangan_pelupusan','sebab_pelupusan','perihal','no_rujukan','tarikh','unit_rekod',
+                    'sistem_aplikasi','saiz_bit','jenis_media','jumlah_media','lokasi_rekod','keadaan_media',
+                    'tajuk_cadangan','penulis','penerbit','tahun','isbn'
+                ]
+            };
+            if (!sourceText && !payload.current_record.tajuk && !payload.current_record.isbn) {
+                showToast('⚠️ Masukkan tajuk, ISBN atau maklumat bahan untuk dianalisis.', 'warning'); return;
+            }
+            try {
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menganalisis...'; }
+                const headers = await getGeminiAuthHeaders();
+                const response = await fetch(url, { method:'POST', headers, body:JSON.stringify(payload) });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                geminiLastSuggestion = normalizeGeminiSuggestion(data);
+                renderGeminiSuggestion(geminiLastSuggestion);
+                updateGeminiUiStatus(true);
+                showToast('✅ AI selesai menentukan cadangan Borang Arkib. Semak sebelum digunakan.');
+            } catch(error) {
+                console.error(error);
+                showToast('❌ Analisis Gemini gagal: ' + (error.message || 'Ralat tidak diketahui'), 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sparkles mr-1"></i> Analisis AI'; }
+            }
+        }
+
+        function escapeGeminiText(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+        function getArkibFormLabel(form){return form==='8/08'?'Borang Arkib 8/08 - Rekod Pandang Dengar':form==='9/08'?'Borang Arkib 9/08 - Rekod Terbitan & Bahan Bercetak':form==='10/08'?'Borang Arkib 10/08 - Rekod Elektronik':'Belum dapat ditentukan';}
+        function renderGeminiSuggestion(x){
+            const box=document.getElementById('geminiSuggestionBox'); const apply=document.getElementById('geminiApplyBtn'); if(!box)return;
+            const formClass=x.borangArkib?'bg-emerald-50 border-emerald-200 text-emerald-800':'bg-amber-50 border-amber-200 text-amber-800';
+            box.innerHTML=`
+                <div class="font-bold text-violet-900 mb-2">Cadangan AI untuk pelupusan, sila semak sebelum guna</div>
+                <div class="rounded-lg border p-3 mb-3 ${formClass}">
+                    <div class="text-[10px] uppercase font-bold tracking-wide">Borang Arkib Dicadangkan</div>
+                    <div class="font-bold text-sm mt-1">${escapeGeminiText(getArkibFormLabel(x.borangArkib))}</div>
+                    <div class="mt-1">${escapeGeminiText(x.alasanBorang||'AI tidak memberikan alasan.')}</div>
+                </div>
+                <div class="grid grid-cols-[120px_1fr] gap-x-2 gap-y-1">
+                    <div class="font-semibold">Jenis bahan</div><div>${escapeGeminiText(x.jenisBahan||'-')}</div>
+                    <div class="font-semibold">Kategori</div><div>${escapeGeminiText(x.kategori||'-')}</div>
+                    <div class="font-semibold">Format</div><div>${escapeGeminiText(x.format||'-')}</div>
+                    <div class="font-semibold">Perekodan</div><div>${escapeGeminiText(x.cadanganPerekodan||'-')}</div>
+                    <div class="font-semibold">Pelupusan</div><div>${escapeGeminiText(x.cadanganPelupusan||'-')}</div>
+                    <div class="font-semibold">Sebab</div><div>${escapeGeminiText(x.sebabPelupusan||'-')}</div>
+                    <div class="font-semibold">Perihal</div><div>${escapeGeminiText(x.perihal||'-')}</div>
+                </div>
+                ${x.borangArkib?'<div class="mt-3 text-[10px] text-slate-500">Klik <b>Guna Cadangan</b> untuk isi medan berkaitan dan pindah ke borang yang dicadangkan. Rekod tidak disimpan secara automatik.</div>':''}`;
+            box.classList.remove('hidden'); if(apply)apply.classList.remove('hidden');
+        }
+        function ensureSelectOption(el,value){if(!el||!value)return;const match=Array.from(el.options).find(o=>o.value.toLowerCase()===String(value).toLowerCase());el.value=match?match.value:'Lain-lain';}
+        function setIfEmpty(id,value){const el=document.getElementById(id);if(el&&value&&!String(el.value||'').trim())el.value=value;}
+        function clearBlankRows(selector){document.querySelectorAll(selector).forEach(r=>{const fields=r.querySelectorAll('input,textarea,select');if(Array.from(fields).every(f=>!String(f.value||'').trim()))r.remove();});}
+        function applyGeminiToForm8(x){
+            if(!document.getElementById('f8_id')?.value)createNewForm8();
+            clearBlankRows('#f8_tbody tr');
+            addForm8Row({ruj:x.noRujukan||'',tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',perihal:x.perihal||x.cadanganPerekodan||'',tarikh:x.tarikh||x.tahun||'',format:x.format||'',unit:x.unitRekod||'1',cadangan:x.cadanganPelupusan||'Musnah',catatan:x.sebabPelupusan||''});
+            setIfEmpty('f8_jumlah_unit',x.unitRekod||'1');
+            switchView('view-borang-8');
+        }
+        function applyGeminiToForm9(x){
+            if(!document.getElementById('f9_id')?.value)createNewForm9();
+            clearBlankRows('#f9_tbody tr');
+            addForm9Row({tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',tahun:x.tahun||x.tarikh||'',jumlah:(x.unitRekod||'1')+' unit',cadangan:x.cadanganPelupusan||'Musnah',catatan:x.sebabPelupusan||x.perihal||''});
+            switchView('view-borang-9');
+        }
+        function applyGeminiToForm10(x){
+            if(!document.getElementById('f10_id')?.value)createNewForm10();
+            setIfEmpty('f10_tajuk_siri',x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'');
+            setIfEmpty('f10_sistem_aplikasi',x.sistemAplikasi);
+            setIfEmpty('f10_format_rekod',x.format);
+            setIfEmpty('f10_saiz_bit',x.saizBit);
+            setIfEmpty('f10_jenis_media',x.jenisMedia||x.format);
+            setIfEmpty('f10_jumlah_media',x.jumlahMedia||x.unitRekod||'1');
+            setIfEmpty('f10_tahun',x.tahun||x.tarikh);
+            setIfEmpty('f10_lokasi',x.lokasiRekod||document.getElementById('bm_lokasi')?.value||'');
+            setIfEmpty('f10_sebab',x.sebabPelupusan);
+            setIfEmpty('f10_cadangan',x.cadanganPelupusan||'Musnah');
+            setIfEmpty('f10_perihal',x.perihal||x.cadanganPerekodan);
+            clearBlankRows('#f10_lamp_tbody tr');
+            addForm10LampRow({ruj:x.noRujukan||'',tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',dari:x.tahun||'',kepada:x.tahun||'',keadaan:x.keadaanMedia||document.getElementById('bm_keadaan')?.value||''});
+            switchView('view-borang-10');
+        }
+        function applyGeminiSuggestion(){
+            const x=geminiLastSuggestion;if(!x){showToast('⚠️ Tiada cadangan AI untuk digunakan.','warning');return;}
+            if(x.tajukCadangan&&!document.getElementById('bm_tajuk').value)document.getElementById('bm_tajuk').value=x.tajukCadangan;
+            if(x.penulis&&!document.getElementById('bm_penulis').value)document.getElementById('bm_penulis').value=x.penulis;
+            if(x.penerbit&&!document.getElementById('bm_penerbit').value)document.getElementById('bm_penerbit').value=x.penerbit;
+            if(x.tahun&&!document.getElementById('bm_tahun').value)document.getElementById('bm_tahun').value=x.tahun;
+            if(x.isbn&&!document.getElementById('bm_isbn').value)document.getElementById('bm_isbn').value=x.isbn;
+            ensureSelectOption(document.getElementById('bm_kategori'),x.kategori);
+            if(x.borangArkib==='8/08')applyGeminiToForm8(x);
+            else if(x.borangArkib==='9/08')applyGeminiToForm9(x);
+            else if(x.borangArkib==='10/08')applyGeminiToForm10(x);
+            else {showToast('⚠️ AI belum dapat menentukan Borang Arkib. Semak maklumat bahan dan analisis semula.','warning');return;}
+            showToast('✅ Cadangan AI dimasukkan ke '+getArkibFormLabel(x.borangArkib)+'. Sila semak sebelum Simpan.');
         }
 
         // --- AUTOSAVE TIMER ENGINE ---
