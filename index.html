@@ -42,6 +42,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -1054,6 +1055,153 @@
 #form10-page2{padding:56px 42px 70px}#form10-page2 .f10-lampiran{text-align:right;font-size:15px;font-weight:700;margin:0 34px 42px 0}#form10-page2 .f10-lamp-title{text-align:center;font-size:15px;line-height:1.15;font-weight:700;margin-bottom:20px}#f10_lamp_table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}#f10_lamp_table th,#f10_lamp_table td{border:1px solid #000;padding:4px;vertical-align:middle;background:#fff;color:#000}#f10_lamp_table th{text-align:center;font-weight:700;height:50px;line-height:1.14}#f10_lamp_table thead tr:nth-child(2) th{height:36px}#f10_lamp_table tbody td{height:41px}#f10_lamp_table td:first-child{text-align:center}#f10_lamp_table textarea,#f10_lamp_table input{height:31px}#f10_lamp_table .f10-lamp-date{text-align:center}#form10-page2 .f10-lamp-officer{border:1px solid #000;border-top:0;min-height:145px;padding:20px 8px 10px}#form10-page2 .f10-lamp-field{display:flex;align-items:baseline;gap:4px;width:55%;min-height:42px}#form10-page2 .f10-lamp-field input{flex:1;width:auto!important}#form10-page2 .f10-add{margin-top:6px;border:1px solid #999!important;width:auto!important;background:#fff!important;padding:4px 8px!important;cursor:pointer}
 @media print{.form10-a4{width:794px!important;min-height:1123px!important;margin:0 auto!important;box-shadow:none!important}#form10-page1{padding:18px 42px 38px!important}#form10-page2{padding:56px 42px 70px!important;page-break-before:always;break-before:page}.form10-a4 .f10-action{display:none!important}#f10_lamp_table th:last-child,#f10_lamp_table td:last-child{display:none!important}}
 
+
+        /* =========================================================
+           BAHAN BUKAN BERCETAK - DASHBOARD REALTIME ARKIB 8/08 & 10/08
+           ========================================================= */
+        .bb-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 1px 3px rgba(15,23,42,.06); }
+        .bb-badge { display:inline-flex; align-items:center; padding:.2rem .55rem; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
+        .bb-table-wrap { overflow-x:auto; }
+        .bb-table { width:100%; border-collapse:collapse; min-width:1050px; }
+        .bb-table th { background:#f8fafc; color:#475569; font-size:11px; text-transform:uppercase; letter-spacing:.02em; text-align:left; padding:11px 10px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+        .bb-table td { padding:10px; border-bottom:1px solid #e2e8f0; font-size:12px; vertical-align:top; }
+        .bb-input, .bb-select, .bb-textarea { width:100%; border:1px solid #cbd5e1; border-radius:9px; padding:9px 10px; background:#fff; color:#0f172a; font-size:13px; outline:none; }
+        .bb-input:focus, .bb-select:focus, .bb-textarea:focus { border-color:#2563eb; box-shadow:0 0 0 2px rgba(37,99,235,.12); }
+        .bb-label { display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:5px; }
+        .bb-modal { position:fixed; inset:0; z-index:80; background:rgba(15,23,42,.58); display:flex; align-items:center; justify-content:center; padding:16px; }
+        .bb-modal.hidden { display:none; }
+        .bb-modal-panel { width:min(980px, 100%); max-height:92vh; overflow:auto; background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(15,23,42,.28); }
+        .bb-source-dot { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:5px; }
+        @media (max-width:767px){ .bb-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;} .bb-form-grid{grid-template-columns:1fr!important;} }
+
+
+        /* =========================================================
+           PENGAWAS PSS AI - CHATBOT TERAPUNG
+           Muncul automatik selepas login berjaya.
+           ========================================================= */
+        #pssAiLauncher {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 85;
+            width: 68px;
+            height: 68px;
+            border-radius: 999px;
+            border: 3px solid #ffffff;
+            background: #166534;
+            box-shadow: 0 14px 35px rgba(15, 23, 42, .28);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #pssAiLauncher:hover { transform: translateY(-2px); }
+        #pssAiLauncher .pss-launcher-badge {
+            position:absolute;
+            top:-3px;
+            right:-3px;
+            width:20px;
+            height:20px;
+            border-radius:999px;
+            background:#22c55e;
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:10px;
+            border:2px solid #fff;
+        }
+        #pssAiPanel {
+            position: fixed;
+            right: 22px;
+            bottom: 100px;
+            z-index: 86;
+            width: min(390px, calc(100vw - 28px));
+            height: min(610px, calc(100vh - 125px));
+            background: #ffffff;
+            border: 1px solid #dbe5df;
+            border-radius: 22px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, .25);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+        #pssAiPanel.pss-ai-open { display:flex; animation: pssAiPop .22s ease-out; }
+        @keyframes pssAiPop { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+        .pss-ai-header {
+            background: linear-gradient(135deg, #14532d, #16a34a);
+            color:#fff;
+            padding:14px 16px;
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .pss-ai-header-copy { min-width:0; flex:1; }
+        .pss-ai-header-copy h3 { margin:0; font-size:14px; font-weight:800; }
+        .pss-ai-header-copy p { margin:2px 0 0; font-size:10px; color:#dcfce7; }
+        .pss-ai-close {
+            width:32px; height:32px; border-radius:10px; border:0;
+            background:rgba(255,255,255,.14); color:#fff; cursor:pointer;
+        }
+        .pss-prefect-avatar {
+            position:relative;
+            width:54px;
+            height:62px;
+            flex:0 0 54px;
+        }
+        .pss-prefect-avatar.small { transform:scale(.78); transform-origin:center; }
+        .pss-prefect-head {
+            position:absolute; left:14px; top:4px; width:28px; height:29px;
+            border-radius:48% 48% 45% 45%; background:#f4c7a1;
+            border:1px solid rgba(15,23,42,.10); z-index:3;
+        }
+        .pss-prefect-hair {
+            position:absolute; left:12px; top:1px; width:32px; height:16px;
+            border-radius:18px 18px 10px 10px; background:#1f2937; z-index:4;
+        }
+        .pss-prefect-hair:after {
+            content:""; position:absolute; right:1px; top:9px; width:7px; height:12px;
+            border-radius:0 0 7px 7px; background:#1f2937;
+        }
+        .pss-prefect-eye { position:absolute; top:15px; width:3px; height:3px; border-radius:50%; background:#111827; z-index:5; }
+        .pss-prefect-eye.left { left:21px; } .pss-prefect-eye.right { left:33px; }
+        .pss-prefect-smile {
+            position:absolute; left:25px; top:22px; width:8px; height:4px;
+            border-bottom:1.5px solid #7c2d12; border-radius:0 0 8px 8px; z-index:5;
+        }
+        .pss-prefect-body {
+            position:absolute; left:8px; bottom:0; width:40px; height:33px;
+            background:#15803d; border-radius:9px 9px 12px 12px; z-index:2;
+            border:1px solid rgba(15,23,42,.12);
+        }
+        .pss-prefect-collar-left,.pss-prefect-collar-right {
+            position:absolute; top:0; width:13px; height:10px; background:#fff; z-index:3;
+        }
+        .pss-prefect-collar-left { left:7px; clip-path:polygon(0 0,100% 0,100% 100%); }
+        .pss-prefect-collar-right { right:7px; clip-path:polygon(0 0,100% 0,0 100%); }
+        .pss-prefect-tie { position:absolute; left:18px; top:7px; width:5px; height:13px; background:#facc15; clip-path:polygon(50% 0,100% 25%,70% 100%,30% 100%,0 25%); z-index:4; }
+        .pss-prefect-badge { position:absolute; right:5px; top:12px; width:9px; height:7px; background:#fff; border-radius:2px; z-index:4; }
+        .pss-ai-messages {
+            flex:1; overflow-y:auto; padding:14px; background:#f8fafc;
+            display:flex; flex-direction:column; gap:10px;
+        }
+        .pss-ai-msg { max-width:86%; padding:10px 12px; border-radius:15px; font-size:12px; line-height:1.45; white-space:pre-wrap; }
+        .pss-ai-msg.bot { align-self:flex-start; background:#fff; border:1px solid #dcfce7; color:#334155; border-bottom-left-radius:5px; }
+        .pss-ai-msg.user { align-self:flex-end; background:#166534; color:#fff; border-bottom-right-radius:5px; }
+        .pss-ai-msg.typing { color:#64748b; font-style:italic; }
+        .pss-ai-quick { display:flex; gap:6px; flex-wrap:wrap; padding:8px 12px 0; background:#fff; }
+        .pss-ai-quick button { border:1px solid #bbf7d0; background:#f0fdf4; color:#166534; border-radius:999px; padding:6px 9px; font-size:10px; cursor:pointer; }
+        .pss-ai-inputbar { display:flex; gap:8px; padding:10px 12px 12px; background:#fff; border-top:1px solid #e2e8f0; }
+        .pss-ai-inputbar input { flex:1; min-width:0; border:1px solid #cbd5e1; border-radius:12px; padding:10px 11px; font-size:12px; outline:none; }
+        .pss-ai-inputbar input:focus { border-color:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.12); }
+        .pss-ai-send { width:40px; height:40px; border:0; border-radius:12px; background:#15803d; color:#fff; cursor:pointer; }
+        .pss-ai-footnote { padding:0 12px 9px; background:#fff; font-size:9px; color:#94a3b8; text-align:center; }
+        @media (max-width: 520px) {
+            #pssAiLauncher { right:14px; bottom:14px; }
+            #pssAiPanel { right:14px; bottom:92px; height:calc(100vh - 112px); }
+        }
+        @media print { #pssAiLauncher, #pssAiPanel { display:none !important; } }
+
     </style>
 </head>
 <body class="bg-slate-100 flex flex-col min-h-screen">
@@ -1137,6 +1285,10 @@
                 <button onclick="switchView('view-rekod-buku')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition" data-view="view-rekod-buku">
                     <i class="fa-solid fa-book w-5 text-center text-emerald-400"></i>
                     <span class="text-sm font-medium">Rekod Buku</span>
+                </button>
+                <button onclick="switchView('view-bahan-bukan-bercetak')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition" data-view="view-bahan-bukan-bercetak">
+                    <i class="fa-solid fa-photo-film w-5 text-center text-cyan-400"></i>
+                    <span class="text-sm font-medium">Bahan Bukan Bercetak</span>
                 </button>
                 
                 <div class="pt-2 pb-1 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Dokumen Rasmi</div>
@@ -1337,6 +1489,101 @@
                     </div>
                 </div>
             </section>
+
+
+
+            <!-- VIEW: BAHAN BUKAN BERCETAK - REALTIME ANDROID / IOS / WEB -->
+            <section id="view-bahan-bukan-bercetak" class="view-section space-y-5 hidden">
+                <div class="bb-card p-5 md:p-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-2xl font-bold text-slate-800">Pengurusan Bahan Bukan Bercetak</h2>
+                                <span id="bbRealtimeBadge" class="bb-badge bg-slate-100 text-slate-600">● Menunggu Firebase</span>
+                            </div>
+                            <p class="text-sm text-slate-500 mt-1">Arkib 8/08 Rekod Pandang Dengar dan Arkib 10/08 Rekod Elektronik. Data Android, iOS dan Web menggunakan koleksi Firestore yang sama secara realtime.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="openBBForm('ARKIB_8_08')" class="px-4 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Rekod Arkib 8/08</button>
+                            <button onclick="openBBForm('ARKIB_10_08')" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Rekod Arkib 10/08</button>
+                            <button onclick="exportBBCSV()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bb-stat-grid grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-slate-500">Jumlah Rekod</div><div id="bbStatTotal" class="text-2xl font-bold text-slate-800 mt-1">0</div></div>
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-cyan-600">Arkib 8/08</div><div id="bbStat8" class="text-2xl font-bold text-cyan-700 mt-1">0</div></div>
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-indigo-600">Arkib 10/08</div><div id="bbStat10" class="text-2xl font-bold text-indigo-700 mt-1">0</div></div>
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-amber-600">Menunggu Semakan</div><div id="bbStatReview" class="text-2xl font-bold text-amber-700 mt-1">0</div></div>
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-orange-600">Cadang Pelupusan</div><div id="bbStatDisposal" class="text-2xl font-bold text-orange-700 mt-1">0</div></div>
+                    <div class="bb-card p-4"><div class="text-[11px] uppercase font-bold text-emerald-600">Telah Dilupuskan</div><div id="bbStatDisposed" class="text-2xl font-bold text-emerald-700 mt-1">0</div></div>
+                </div>
+
+                <div class="bb-card p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
+                        <div class="xl:col-span-2"><label class="bb-label">Carian</label><input id="bbSearch" oninput="renderBBTable()" class="bb-input" placeholder="No. rekod, tajuk, koleksi, lokasi..."></div>
+                        <div><label class="bb-label">Jenis Borang</label><select id="bbFilterType" onchange="renderBBTable()" class="bb-select"><option value="">Semua</option><option value="ARKIB_8_08">Arkib 8/08</option><option value="ARKIB_10_08">Arkib 10/08</option></select></div>
+                        <div><label class="bb-label">Status</label><select id="bbFilterStatus" onchange="renderBBTable()" class="bb-select"><option value="">Semua</option><option>Aktif</option><option>Untuk Semakan</option><option>Dicadang Untuk Pelupusan</option><option>Menunggu Kelulusan</option><option>Diluluskan</option><option>Telah Dilupuskan</option></select></div>
+                        <div><label class="bb-label">Sumber</label><select id="bbFilterSource" onchange="renderBBTable()" class="bb-select"><option value="">Semua</option><option value="ANDROID">Android</option><option value="IOS">iOS</option><option value="WEB">Web</option></select></div>
+                        <div><label class="bb-label">Tahun</label><input id="bbFilterYear" oninput="renderBBTable()" class="bb-input" placeholder="2026"></div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 mt-4">
+                        <button onclick="toggleBBSelectAll(this)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold">Pilih Semua Paparan</button>
+                        <button onclick="generateBBForm8FromSelection()" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-xs font-semibold">Jana Arkib 8/08</button>
+                        <button onclick="generateBBForm10FromSelection()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Jana Arkib 10/08</button>
+                        <span id="bbSelectionCount" class="text-xs text-slate-500 ml-auto">0 dipilih</span>
+                    </div>
+                </div>
+
+                <div class="bb-card overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between"><h3 class="font-bold text-slate-800">Senarai Rekod Realtime</h3><span class="text-xs text-slate-500">Collection: <code>bahan_bukan_bercetak</code></span></div>
+                    <div class="bb-table-wrap"><table class="bb-table"><thead><tr><th><input type="checkbox" id="bbMasterCheck" onchange="toggleBBSelectAll(this)"></th><th>Bil.</th><th>No. Rekod</th><th>Jenis</th><th>Koleksi / Tajuk</th><th>Lokasi</th><th>Status</th><th>Sumber</th><th>Tarikh</th><th>Tindakan</th></tr></thead><tbody id="bbTableBody"></tbody></table></div>
+                </div>
+
+                <div class="bb-card overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-200"><h3 class="font-bold text-slate-800">10 Rekod Terkini</h3></div>
+                    <div id="bbRecentList" class="divide-y divide-slate-100"></div>
+                </div>
+            </section>
+
+            <!-- MODAL DAFTAR / EDIT BAHAN BUKAN BERCETAK -->
+            <div id="bbRecordModal" class="bb-modal hidden no-print" onclick="if(event.target===this) closeBBForm()">
+                <div class="bb-modal-panel">
+                    <div class="sticky top-0 z-10 bg-white px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                        <div><h3 id="bbModalTitle" class="text-lg font-bold text-slate-800">Daftar Rekod</h3><p class="text-xs text-slate-500">Sumber Web. Rekod mobile akan menggunakan struktur Firestore yang sama.</p></div>
+                        <button onclick="closeBBForm()" class="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <form id="bbRecordForm" onsubmit="saveBBRecord(event)" class="p-5 space-y-5">
+                        <input type="hidden" id="bb_id"><input type="hidden" id="bb_type">
+                        <div class="bb-form-grid grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="bb-label">Jenis Borang</label><input id="bb_type_display" class="bb-input bg-slate-50" readonly></div>
+                            <div><label class="bb-label">No. Rekod</label><input id="bb_no_rekod" class="bb-input bg-slate-50" placeholder="Dijana ketika simpan" readonly></div>
+                            <div><label class="bb-label">Tarikh Daftar</label><input id="bb_tarikh_daftar" type="date" class="bb-input"></div>
+                            <div id="bbFieldCollection"><label class="bb-label">Jenis Koleksi</label><select id="bb_jenis_koleksi" onchange="toggleBBLainLain()" class="bb-select"></select></div>
+                            <div id="bbFieldOtherCollection" class="hidden"><label class="bb-label">Jenis Koleksi Lain-lain</label><input id="bb_koleksi_lain" class="bb-input"></div>
+                            <div><label class="bb-label">Tajuk / Nama Fail</label><input id="bb_tajuk" class="bb-input" required></div>
+                            <div><label class="bb-label">Format Rekod</label><input id="bb_format" class="bb-input" placeholder="MP4, WAV, PDF, pangkalan data..."></div>
+                            <div><label class="bb-label">Tahun / Tahun Mula</label><input id="bb_tahun" class="bb-input" placeholder="2026"></div>
+                            <div id="bbFieldYearEnd" class="hidden"><label class="bb-label">Tahun Akhir</label><input id="bb_tahun_akhir" class="bb-input" placeholder="2026"></div>
+                            <div><label class="bb-label">Kuantiti / Unit Media</label><input id="bb_kuantiti" type="number" min="1" value="1" class="bb-input"></div>
+                            <div><label class="bb-label">Lokasi</label><input id="bb_lokasi" class="bb-input"></div>
+                            <div><label class="bb-label">Status</label><select id="bb_status" class="bb-select"><option>Aktif</option><option>Untuk Semakan</option><option>Dicadang Untuk Pelupusan</option><option>Menunggu Kelulusan</option><option>Diluluskan</option><option>Telah Dilupuskan</option></select></div>
+                            <div id="bbFieldSystem" class="hidden"><label class="bb-label">Sistem Aplikasi</label><input id="bb_sistem_aplikasi" class="bb-input"></div>
+                            <div id="bbFieldSize" class="hidden"><label class="bb-label">Saiz Data</label><div class="flex gap-2"><input id="bb_saiz_data" type="number" min="0" step="0.01" class="bb-input"><select id="bb_unit_saiz" class="bb-select !w-28"><option>KB</option><option selected>MB</option><option>GB</option><option>TB</option></select></div></div>
+                            <div id="bbFieldMedia" class="hidden"><label class="bb-label">Jenis Media</label><input id="bb_jenis_media" class="bb-input" placeholder="HDD, SSD, CD, server..."></div>
+                            <div id="bbFieldSecurity" class="hidden"><label class="bb-label">Peringkat Keselamatan</label><input id="bb_keselamatan" class="bb-input"></div>
+                            <div><label class="bb-label">Keadaan</label><input id="bb_keadaan" class="bb-input"></div>
+                            <div><label class="bb-label">Cadangan Tindakan</label><select id="bb_cadangan" class="bb-select"><option>Musnah</option><option>Simpan</option><option>Semakan Lanjut</option></select></div>
+                        </div>
+                        <div><label class="bb-label">Perihal</label><textarea id="bb_perihal" rows="2" class="bb-textarea"></textarea></div>
+                        <div><label class="bb-label">Sebab Pelupusan</label><textarea id="bb_sebab" rows="2" class="bb-textarea"></textarea></div>
+                        <div><label class="bb-label">Catatan</label><textarea id="bb_catatan" rows="2" class="bb-textarea"></textarea></div>
+                        <div><label class="bb-label">URL Gambar (satu URL setiap baris)</label><textarea id="bb_gambar_urls" rows="3" class="bb-textarea" placeholder="Aplikasi Android/iOS boleh muat naik gambar ke Firebase Storage dan simpan URL di sini."></textarea></div>
+                        <div class="flex justify-end gap-2 border-t border-slate-200 pt-4"><button type="button" onclick="closeBBForm()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-semibold">Batal</button><button id="bbSaveBtn" type="submit" class="px-5 py-2.5 bg-dispora-dark hover:bg-dispora-mid text-white rounded-xl text-sm font-semibold"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Realtime</button></div>
+                    </form>
+                </div>
+            </div>
 
             <!-- VIEW: BORANG 8 ARKIB 8/08 -->
             <section id="view-borang-8" class="view-section space-y-4 hidden">
@@ -2113,7 +2360,7 @@ Johor Darul Ta'zim.</textarea>
                 </div>
 
                 <div class="rounded-xl border border-violet-200 bg-violet-50 p-3 space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div><div class="font-bold text-violet-900"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Bantuan Gemini AI</div><div class="text-[11px] text-violet-700 mt-0.5">Kenal pasti jenis bahan, kategori, format dan tentukan pelupusan yang sesuai mengikut Borang Arkib 8/08, 9/08 atau 10/08.</div></div><span id="geminiAiFeatureStatus" class="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap">🔴 Selepas API</span></div>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div><div class="font-bold text-violet-900"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Bantuan Gemini AI</div><div class="text-[11px] text-violet-700 mt-0.5">Kenal pasti jenis bahan, kategori, format dan cadangan perekodan.</div></div><span id="geminiAiFeatureStatus" class="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap">🔴 Selepas API</span></div>
                     <div><label class="font-semibold block mb-1 text-slate-700">Maklumat untuk dianalisis AI</label><textarea id="bm_ai_input" rows="2" class="w-full px-3 py-2 border border-violet-200 rounded-lg bg-white" placeholder="Contoh: majalah sekolah 2024, buku teks rosak, risalah program, laporan tahunan..."></textarea></div>
                     <div class="flex flex-wrap gap-2"><button type="button" id="geminiAnalyzeBtn" onclick="analyzeBookWithGemini()" class="px-3 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 font-semibold"><i class="fa-solid fa-sparkles mr-1"></i> Analisis AI</button><button type="button" onclick="applyGeminiSuggestion()" id="geminiApplyBtn" class="hidden px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold"><i class="fa-solid fa-check mr-1"></i> Guna Cadangan</button></div>
                     <div id="geminiSuggestionBox" class="hidden rounded-lg bg-white border border-violet-200 p-3 text-[11px] text-slate-700"></div>
@@ -2255,6 +2502,7 @@ Johor Darul Ta'zim.</textarea>
         // --- LOCAL STORAGE KEYS ---
         const STORAGE_KEYS = {
             BOOKS: 'dispora_books',
+            NONPRINT: 'dispora_bahan_bukan_bercetak',
             FORM8: 'dispora_form8',
             FORM10: 'dispora_form10',
             FORM9: 'dispora_form9',
@@ -2269,6 +2517,7 @@ Johor Darul Ta'zim.</textarea>
 
         // --- INITIAL STATE & DEMO SEED DATA ---
         let booksData = [];
+        let bahanBukanBercetakData = [];
         let form8Data = [];
         let form10Data = [];
         let form9Data = [];
@@ -2291,6 +2540,7 @@ Johor Darul Ta'zim.</textarea>
             initSignatureCanvas();
             renderDashboardStatsAndCharts();
             renderBooksTable();
+            renderBBTable();
             renderApplicationsTable();
             renderArchiveTable();
             renderActivityLogs();
@@ -2309,6 +2559,7 @@ Johor Darul Ta'zim.</textarea>
         // --- DATA STORAGE HANDLERS ---
         function loadAllDataFromStorage() {
             booksData = JSON.parse(localStorage.getItem(STORAGE_KEYS.BOOKS) || '[]');
+            bahanBukanBercetakData = JSON.parse(localStorage.getItem(STORAGE_KEYS.NONPRINT) || '[]');
             form8Data = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORM8) || '[]');
             form10Data = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORM10) || '[]');
             form9Data = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORM9) || '[]');
@@ -2338,6 +2589,7 @@ Johor Darul Ta'zim.</textarea>
 
         function saveAllToStorage() {
             localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(booksData));
+            localStorage.setItem(STORAGE_KEYS.NONPRINT, JSON.stringify(bahanBukanBercetakData));
             localStorage.setItem(STORAGE_KEYS.FORM8, JSON.stringify(form8Data));
             localStorage.setItem(STORAGE_KEYS.FORM10, JSON.stringify(form10Data));
             localStorage.setItem(STORAGE_KEYS.FORM9, JSON.stringify(form9Data));
@@ -2373,6 +2625,74 @@ Johor Darul Ta'zim.</textarea>
         function printForm10(){const p1=document.getElementById('form10-page1'),p2=document.getElementById('form10-page2'),a=p1.classList.contains('preview-mode'),b=p2.classList.contains('preview-mode');p1.classList.add('preview-mode');p2.classList.add('preview-mode');window.print();setTimeout(()=>{if(!a)p1.classList.remove('preview-mode');if(!b)p2.classList.remove('preview-mode')},500)}
         async function generateForm10PDF(){const pages=[document.getElementById('form10-page1'),document.getElementById('form10-page2')],states=pages.map(p=>p.classList.contains('preview-mode'));pages.forEach(p=>p.classList.add('preview-mode'));try{const{jsPDF}=window.jspdf,pdf=new jsPDF('p','mm','a4');for(let i=0;i<pages.length;i++){const canvas=await html2canvas(pages[i],{scale:2,backgroundColor:'#fff',useCORS:true}),img=canvas.toDataURL('image/jpeg',.96),h=210*canvas.height/canvas.width;if(i)pdf.addPage();pdf.addImage(img,'JPEG',0,0,210,Math.min(h,297))}pdf.save('Borang_Arkib_10_08.pdf')}finally{pages.forEach((p,i)=>{if(!states[i])p.classList.remove('preview-mode')})}}
 
+
+
+        // --- BAHAN BUKAN BERCETAK: ARKIB 8/08 + 10/08, REALTIME ANDROID / IOS / WEB ---
+        const BB_COLLECTIONS = [
+            'Alatan Tradisional','Audio Compact Disc','Banting','Boneka','CD-Rom Interactive','Combinding Machine','Compact Disc','Digital Video','Diorama','Disket Komputer','Filem 8/16/35 mm','Filem Jalur','Filem Slaid','Geometri','Glob','IPAD','Kad Audio','Kamera','Kit','Kompas','Laminating Machine','Lukisan','Model','Multimedia Kit','Overhead Projector','Paper Punch','Perakam Audio','Perakam Video','Permainan','Peti Cadangan','Peti Kecemasan','Piring Hitam','Pita Audio','Pita Video','Radio','Realia','Stapler Gun','Televisyen','Transparensi','Video Compact Disc','Lain-lain'
+        ];
+        let bbSelectedIds = new Set();
+
+        function bbEsc(v){ return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+        function bbDateValue(v){ if(!v) return ''; if(typeof v.toDate==='function') return v.toDate().toISOString(); if(v.seconds) return new Date(v.seconds*1000).toISOString(); return String(v); }
+        function bbDisplayDate(v){ const x=bbDateValue(v); if(!x) return '-'; const d=new Date(x); return isNaN(d)?bbEsc(x):d.toLocaleString('ms-MY'); }
+        function bbStatusClass(status){ const map={'Aktif':'bg-emerald-50 text-emerald-700','Untuk Semakan':'bg-amber-50 text-amber-700','Dicadang Untuk Pelupusan':'bg-orange-50 text-orange-700','Menunggu Kelulusan':'bg-blue-50 text-blue-700','Diluluskan':'bg-indigo-50 text-indigo-700','Telah Dilupuskan':'bg-slate-200 text-slate-700'}; return map[status]||'bg-slate-100 text-slate-600'; }
+        function bbSourceClass(source){ const s=String(source||'WEB').toUpperCase(); return s==='ANDROID'?'bg-emerald-50 text-emerald-700':s==='IOS'?'bg-slate-100 text-slate-700':'bg-blue-50 text-blue-700'; }
+
+        function initBBCollectionDropdown(){ const sel=document.getElementById('bb_jenis_koleksi'); if(!sel||sel.options.length) return; sel.innerHTML=BB_COLLECTIONS.map(x=>`<option value="${bbEsc(x)}">${bbEsc(x)}</option>`).join(''); }
+        function toggleBBLainLain(){ const v=document.getElementById('bb_jenis_koleksi')?.value; document.getElementById('bbFieldOtherCollection')?.classList.toggle('hidden',v!=='Lain-lain'); }
+        function updateBBFormFields(type){ const electronic=type==='ARKIB_10_08'; ['bbFieldSystem','bbFieldSize','bbFieldMedia','bbFieldSecurity','bbFieldYearEnd'].forEach(id=>document.getElementById(id)?.classList.toggle('hidden',!electronic)); document.getElementById('bbFieldCollection')?.classList.toggle('hidden',electronic); document.getElementById('bbFieldOtherCollection')?.classList.add('hidden'); }
+
+        function openBBForm(type='ARKIB_8_08', id=''){
+            initBBCollectionDropdown(); const modal=document.getElementById('bbRecordModal'); if(!modal)return;
+            const rec=id?bahanBukanBercetakData.find(x=>x.id===id):null; const t=rec?.jenisBorang||type;
+            document.getElementById('bbRecordForm')?.reset(); document.getElementById('bb_id').value=rec?.id||''; document.getElementById('bb_type').value=t; document.getElementById('bb_type_display').value=t==='ARKIB_8_08'?'Arkib 8/08 - Rekod Pandang Dengar':'Arkib 10/08 - Rekod Elektronik'; document.getElementById('bb_no_rekod').value=rec?.noRekod||''; document.getElementById('bb_tarikh_daftar').value=(rec?.tarikhDaftar||new Date().toISOString().slice(0,10)).slice(0,10);
+            const values={bb_tajuk:rec?.tajuk||rec?.namaFail||'',bb_format:rec?.formatRekod||rec?.format||'',bb_tahun:rec?.tahunMula||rec?.tahun||'',bb_tahun_akhir:rec?.tahunAkhir||'',bb_kuantiti:rec?.jumlahUnitMedia||rec?.kuantiti||1,bb_lokasi:rec?.lokasiRekod||rec?.lokasi||'',bb_status:rec?.status||'Aktif',bb_sistem_aplikasi:rec?.sistemAplikasi||'',bb_saiz_data:rec?.saizData||'',bb_unit_saiz:rec?.unitSaiz||'MB',bb_jenis_media:rec?.jenisMedia||'',bb_keselamatan:rec?.peringkatKeselamatan||'',bb_keadaan:rec?.keadaan||'',bb_cadangan:rec?.cadanganTindakan||'Musnah',bb_perihal:rec?.perihal||'',bb_sebab:rec?.sebabPelupusan||'',bb_catatan:rec?.catatan||'',bb_gambar_urls:Array.isArray(rec?.gambarUrls)?rec.gambarUrls.join('\n'):''};
+            Object.entries(values).forEach(([k,v])=>{const e=document.getElementById(k);if(e)e.value=v});
+            const coll=rec?.jenisKoleksi||BB_COLLECTIONS[0]; if(document.getElementById('bb_jenis_koleksi')) document.getElementById('bb_jenis_koleksi').value=BB_COLLECTIONS.includes(coll)?coll:'Lain-lain'; if(!BB_COLLECTIONS.includes(coll)){document.getElementById('bb_koleksi_lain').value=coll}else document.getElementById('bb_koleksi_lain').value=rec?.jenisKoleksiLain||'';
+            updateBBFormFields(t); toggleBBLainLain(); document.getElementById('bbModalTitle').textContent=(rec?'Edit ':'Daftar ')+(t==='ARKIB_8_08'?'Arkib 8/08':'Arkib 10/08'); modal.classList.remove('hidden');
+        }
+        function closeBBForm(){ document.getElementById('bbRecordModal')?.classList.add('hidden'); }
+
+        async function nextBBRecordNo(type){
+            const prefix=type==='ARKIB_8_08'?'BB8':'BB10'; const key=type==='ARKIB_8_08'?'seq8':'seq10';
+            if(firebaseReady&&db&&auth?.currentUser){ const ref=db.collection('dispora_counters').doc('bahan_bukan_bercetak'); try{ const n=await db.runTransaction(async tx=>{const snap=await tx.get(ref);const cur=(snap.exists&&Number(snap.data()?.[key]))||0;const next=cur+1;tx.set(ref,{[key]:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return next}); return `${prefix}-${String(n).padStart(6,'0')}`; }catch(e){console.error('Counter BB gagal',e)} }
+            const localMax=bahanBukanBercetakData.filter(x=>x.jenisBorang===type).reduce((m,x)=>{const n=Number(String(x.noRekod||'').match(/(\d+)$/)?.[1]||0);return Math.max(m,n)},0)+1; return `${prefix}-${String(localMax).padStart(6,'0')}`;
+        }
+
+        async function saveBBRecord(event){ event?.preventDefault(); const btn=document.getElementById('bbSaveBtn'); if(btn)btn.disabled=true; try{
+            const id=document.getElementById('bb_id').value; const type=document.getElementById('bb_type').value; const existing=id?bahanBukanBercetakData.find(x=>x.id===id):null; const noRekod=existing?.noRekod||await nextBBRecordNo(type); const nowIso=new Date().toISOString(); const user=auth?.currentUser?.email||localStorage.getItem(STORAGE_KEYS.USER)||'web-admin'; const selectedColl=document.getElementById('bb_jenis_koleksi')?.value||''; const coll=selectedColl==='Lain-lain'?(document.getElementById('bb_koleksi_lain').value.trim()||'Lain-lain'):selectedColl;
+            const payload={
+                noRekod,jenisBorang:type,kategoriBahan:'BAHAN BUKAN CETAK',jenisKoleksi:type==='ARKIB_8_08'?coll:'',tajuk:document.getElementById('bb_tajuk').value.trim(),namaFail:type==='ARKIB_10_08'?document.getElementById('bb_tajuk').value.trim():'',perihal:document.getElementById('bb_perihal').value.trim(),format:document.getElementById('bb_format').value.trim(),formatRekod:document.getElementById('bb_format').value.trim(),tahun:type==='ARKIB_8_08'?document.getElementById('bb_tahun').value.trim():'',tahunMula:type==='ARKIB_10_08'?document.getElementById('bb_tahun').value.trim():'',tahunAkhir:type==='ARKIB_10_08'?document.getElementById('bb_tahun_akhir').value.trim():'',kuantiti:Number(document.getElementById('bb_kuantiti').value||1),jumlahUnitMedia:Number(document.getElementById('bb_kuantiti').value||1),lokasi:document.getElementById('bb_lokasi').value.trim(),lokasiRekod:document.getElementById('bb_lokasi').value.trim(),keadaan:document.getElementById('bb_keadaan').value.trim(),sebabPelupusan:document.getElementById('bb_sebab').value.trim(),status:document.getElementById('bb_status').value,catatan:document.getElementById('bb_catatan').value.trim(),sistemAplikasi:document.getElementById('bb_sistem_aplikasi').value.trim(),saizData:document.getElementById('bb_saiz_data').value.trim(),unitSaiz:document.getElementById('bb_unit_saiz').value,jenisMedia:document.getElementById('bb_jenis_media').value.trim(),peringkatKeselamatan:document.getElementById('bb_keselamatan').value.trim(),cadanganTindakan:document.getElementById('bb_cadangan').value,tarikhDaftar:document.getElementById('bb_tarikh_daftar').value,sourcePlatform:'WEB',syncStatus:'SYNCED',gambarUrls:document.getElementById('bb_gambar_urls').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),updatedBy:user,updatedAt:nowIso
+            };
+            if(firebaseReady&&db&&auth?.currentUser){ let ref; if(id)ref=db.collection(BAHAN_BUKAN_BERCETAK_COLLECTION).doc(id); else ref=db.collection(BAHAN_BUKAN_BERCETAK_COLLECTION).doc(); const clientRecordId=existing?.clientRecordId||`WEB_${ref.id}`; const cloud={...payload,clientRecordId,createdBy:existing?.createdBy||user,createdAt:existing?.createdAt||firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()}; await ref.set(cloud,{merge:true}); }
+            else { const localId=id||('bb_'+Date.now()); const obj={...existing,...payload,id:localId,clientRecordId:existing?.clientRecordId||`WEB_${localId}`,createdBy:existing?.createdBy||user,createdAt:existing?.createdAt||nowIso}; const i=bahanBukanBercetakData.findIndex(x=>x.id===localId); if(i>=0)bahanBukanBercetakData[i]=obj;else bahanBukanBercetakData.push(obj); localStorage.setItem(STORAGE_KEYS.NONPRINT,JSON.stringify(bahanBukanBercetakData)); renderBBTable(); }
+            addActivityLog(`Menyimpan rekod ${type==='ARKIB_8_08'?'Arkib 8/08':'Arkib 10/08'}: ${noRekod}`); closeBBForm(); showToast('✅ Rekod bahan bukan bercetak berjaya disimpan.');
+        }catch(e){console.error(e);showToast('❌ Rekod gagal disimpan: '+(e.message||e),'error')}finally{if(btn)btn.disabled=false} }
+
+        function startBahanBukanBercetakRealtimeSync(){
+            if(!firebaseReady||!db||!auth?.currentUser){ renderBBRealtimeState(false,'Mod tempatan'); return; }
+            if(bahanBukanBercetakUnsubscribe){try{bahanBukanBercetakUnsubscribe()}catch(e){}}
+            bahanBukanBercetakUnsubscribe=db.collection(BAHAN_BUKAN_BERCETAK_COLLECTION).onSnapshot(snapshot=>{ const arr=[];snapshot.forEach(doc=>{const d=doc.data()||{};arr.push({...d,id:doc.id,createdAt:bbDateValue(d.createdAt),updatedAt:bbDateValue(d.updatedAt)})}); bahanBukanBercetakData=arr; localStorage.setItem(STORAGE_KEYS.NONPRINT,JSON.stringify(arr)); renderBBTable(); renderBBRealtimeState(true,`${arr.length} rekod realtime`); },err=>{console.error('Realtime BB error',err);renderBBRealtimeState(false,'Gagal sync');showToast('⚠️ Gagal sync bahan bukan bercetak: '+(err.message||err),'error')});
+        }
+        function renderBBRealtimeState(ok,text){ const b=document.getElementById('bbRealtimeBadge');if(!b)return;b.className='bb-badge '+(ok?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700');b.textContent=(ok?'● ':'● ')+text; }
+
+        function getBBFiltered(){ const q=(document.getElementById('bbSearch')?.value||'').toLowerCase().trim(),type=document.getElementById('bbFilterType')?.value||'',status=document.getElementById('bbFilterStatus')?.value||'',source=document.getElementById('bbFilterSource')?.value||'',year=(document.getElementById('bbFilterYear')?.value||'').trim(); return bahanBukanBercetakData.filter(r=>{const hay=[r.noRekod,r.tajuk,r.namaFail,r.jenisKoleksi,r.lokasi,r.lokasiRekod,r.formatRekod,r.jenisMedia].join(' ').toLowerCase();const ry=String(r.tahun||r.tahunMula||r.tahunAkhir||'');return(!q||hay.includes(q))&&(!type||r.jenisBorang===type)&&(!status||r.status===status)&&(!source||String(r.sourcePlatform||'WEB').toUpperCase()===source)&&(!year||ry.includes(year));}).sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||''))); }
+        function renderBBTable(){ const tb=document.getElementById('bbTableBody'); if(!tb)return; const rows=getBBFiltered(); const total=bahanBukanBercetakData.length; const c=id=>document.getElementById(id); if(c('bbStatTotal'))c('bbStatTotal').textContent=total;if(c('bbStat8'))c('bbStat8').textContent=bahanBukanBercetakData.filter(x=>x.jenisBorang==='ARKIB_8_08').length;if(c('bbStat10'))c('bbStat10').textContent=bahanBukanBercetakData.filter(x=>x.jenisBorang==='ARKIB_10_08').length;if(c('bbStatReview'))c('bbStatReview').textContent=bahanBukanBercetakData.filter(x=>x.status==='Untuk Semakan').length;if(c('bbStatDisposal'))c('bbStatDisposal').textContent=bahanBukanBercetakData.filter(x=>x.status==='Dicadang Untuk Pelupusan').length;if(c('bbStatDisposed'))c('bbStatDisposed').textContent=bahanBukanBercetakData.filter(x=>x.status==='Telah Dilupuskan').length;
+            tb.innerHTML=rows.length?rows.map((r,i)=>{const title=r.jenisBorang==='ARKIB_8_08'?(r.jenisKoleksi?`${r.jenisKoleksi}<div class="text-slate-500 mt-1">${bbEsc(r.tajuk||'')}</div>`:bbEsc(r.tajuk||'')):bbEsc(r.tajuk||r.namaFail||''); const src=String(r.sourcePlatform||'WEB').toUpperCase();return `<tr><td><input type="checkbox" class="bb-row-check" data-id="${bbEsc(r.id)}" ${bbSelectedIds.has(r.id)?'checked':''} onchange="toggleBBSelection('${bbEsc(r.id)}',this.checked)"></td><td>${i+1}</td><td class="font-semibold text-slate-700">${bbEsc(r.noRekod||'-')}</td><td><span class="bb-badge ${r.jenisBorang==='ARKIB_8_08'?'bg-cyan-50 text-cyan-700':'bg-indigo-50 text-indigo-700'}">${r.jenisBorang==='ARKIB_8_08'?'Arkib 8/08':'Arkib 10/08'}</span></td><td>${title}</td><td>${bbEsc(r.lokasi||r.lokasiRekod||'-')}</td><td><span class="bb-badge ${bbStatusClass(r.status)}">${bbEsc(r.status||'Aktif')}</span></td><td><span class="bb-badge ${bbSourceClass(src)}">${bbEsc(src==='IOS'?'iOS':src.charAt(0)+src.slice(1).toLowerCase())}</span></td><td>${bbDisplayDate(r.updatedAt||r.createdAt||r.tarikhDaftar)}</td><td class="whitespace-nowrap"><button onclick="openBBForm('${r.jenisBorang}','${bbEsc(r.id)}')" class="px-2 py-1 bg-blue-50 text-blue-700 rounded mr-1" title="Edit"><i class="fa-solid fa-pen"></i></button><button onclick="deleteBBRecord('${bbEsc(r.id)}')" class="px-2 py-1 bg-red-50 text-red-700 rounded" title="Padam"><i class="fa-solid fa-trash"></i></button></td></tr>`}).join(''):`<tr><td colspan="10" class="text-center py-10 text-slate-500">Belum ada rekod bahan bukan bercetak.</td></tr>`; updateBBSelectionCount(); renderBBRecent(); }
+        function renderBBRecent(){const el=document.getElementById('bbRecentList');if(!el)return;const recent=[...bahanBukanBercetakData].sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||''))).slice(0,10);el.innerHTML=recent.length?recent.map(r=>`<div class="px-4 py-3 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-xs"><span class="text-slate-400 md:w-40">${bbDisplayDate(r.updatedAt||r.createdAt)}</span><span class="font-semibold text-slate-700 md:w-32">${bbEsc(r.noRekod||'-')}</span><span class="md:w-28">${r.jenisBorang==='ARKIB_8_08'?'Arkib 8/08':'Arkib 10/08'}</span><span class="md:w-24">${bbEsc(r.sourcePlatform||'WEB')}</span><span class="bb-badge ${bbStatusClass(r.status)}">${bbEsc(r.status||'Aktif')}</span></div>`).join(''):'<div class="p-5 text-sm text-slate-500">Tiada rekod terkini.</div>';}
+        function toggleBBSelection(id,checked){checked?bbSelectedIds.add(id):bbSelectedIds.delete(id);updateBBSelectionCount()}
+        function updateBBSelectionCount(){const e=document.getElementById('bbSelectionCount');if(e)e.textContent=`${bbSelectedIds.size} dipilih`;}
+        function toggleBBSelectAll(source){const checked=source?.checked!==undefined?source.checked:true;const boxes=[...document.querySelectorAll('.bb-row-check')];boxes.forEach(b=>{b.checked=checked;checked?bbSelectedIds.add(b.dataset.id):bbSelectedIds.delete(b.dataset.id)});const master=document.getElementById('bbMasterCheck');if(master&&source!==master)master.checked=checked;updateBBSelectionCount()}
+        async function deleteBBRecord(id){if(!confirm('Adakah anda pasti mahu memadam rekod ini?'))return;try{if(firebaseReady&&db&&auth?.currentUser)await db.collection(BAHAN_BUKAN_BERCETAK_COLLECTION).doc(id).delete();else{bahanBukanBercetakData=bahanBukanBercetakData.filter(x=>x.id!==id);localStorage.setItem(STORAGE_KEYS.NONPRINT,JSON.stringify(bahanBukanBercetakData));renderBBTable()}bbSelectedIds.delete(id);showToast('✅ Rekod dipadam.')}catch(e){showToast('❌ Gagal memadam rekod: '+(e.message||e),'error')}}
+        function exportBBCSV(){const rows=getBBFiltered();if(!rows.length){showToast('⚠️ Tiada data untuk dieksport.','warning');return;}const flat=rows.map(r=>({NoRekod:r.noRekod,JenisBorang:r.jenisBorang,JenisKoleksi:r.jenisKoleksi,Tajuk:r.tajuk||r.namaFail,Format:r.formatRekod||r.format,Tahun:r.tahun||r.tahunMula,TahunAkhir:r.tahunAkhir,Kuantiti:r.kuantiti||r.jumlahUnitMedia,Lokasi:r.lokasi||r.lokasiRekod,Status:r.status,Sumber:r.sourcePlatform,CreatedBy:r.createdBy,UpdatedBy:r.updatedBy}));const ws=XLSX.utils.json_to_sheet(flat),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Bahan Bukan Bercetak');XLSX.writeFile(wb,'DISPORA_Bahan_Bukan_Bercetak.xlsx')}
+
+        function selectedBBRecords(type){return [...bbSelectedIds].map(id=>bahanBukanBercetakData.find(x=>x.id===id)).filter(Boolean).filter(x=>!type||x.jenisBorang===type)}
+        function validateBBSelection(type){const all=[...bbSelectedIds].map(id=>bahanBukanBercetakData.find(x=>x.id===id)).filter(Boolean);if(!all.length){showToast('⚠️ Pilih sekurang-kurangnya satu rekod.','warning');return null}if(all.some(x=>x.jenisBorang!==type)){showToast('⚠️ Jangan campurkan Arkib 8/08 dan Arkib 10/08 dalam satu borang.','warning');return null}return all}
+        function generateBBForm8FromSelection(){const items=validateBBSelection('ARKIB_8_08');if(!items)return;createNewForm8();document.getElementById('f8_tbody').innerHTML='';items.forEach(r=>addForm8Row({ruj:r.noRekod,tajuk:r.tajuk,perihal:r.perihal,tarikh:r.tarikhDaftar||r.tahun,format:r.formatRekod||r.format,unit:r.kuantiti||1,cadangan:r.cadanganTindakan||'Musnah',catatan:r.catatan||''}));document.getElementById('f8_jumlah_unit').value=items.reduce((a,r)=>a+Number(r.kuantiti||1),0);switchView('view-borang-8');showToast('✅ Rekod dipindahkan ke Borang Arkib 8/08.')}
+        function generateBBForm10FromSelection(){const items=validateBBSelection('ARKIB_10_08');if(!items)return;const r=items[0];createNewForm10();const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v??''};set('f10_tajuk_siri',items.length===1?(r.tajuk||r.namaFail):`${r.tajuk||r.namaFail} dan ${items.length-1} rekod lain`);set('f10_sistem_aplikasi',r.sistemAplikasi);set('f10_format_rekod',[...new Set(items.map(x=>x.formatRekod||x.format).filter(Boolean))].join(', '));set('f10_saiz_bit',items.map(x=>x.saizData?`${x.saizData} ${x.unitSaiz||''}`:'').filter(Boolean).join(' + '));set('f10_jenis_media',[...new Set(items.map(x=>x.jenisMedia).filter(Boolean))].join(', '));set('f10_jumlah_media',items.reduce((a,x)=>a+Number(x.jumlahUnitMedia||x.kuantiti||1),0));set('f10_tahun',items.map(x=>[x.tahunMula,x.tahunAkhir].filter(Boolean).join('-')).filter(Boolean).join(', '));set('f10_keselamatan',r.peringkatKeselamatan);set('f10_lokasi',[...new Set(items.map(x=>x.lokasiRekod||x.lokasi).filter(Boolean))].join(', '));set('f10_sebab',r.sebabPelupusan);set('f10_cadangan',r.cadanganTindakan||'Musnah');set('f10_perihal',items.map(x=>`${x.noRekod||''} - ${x.tajuk||x.namaFail||''}`).join('\n'));const tb=document.getElementById('f10_lamp_tbody');if(tb){tb.innerHTML='';items.forEach(x=>addForm10LampRow({ruj:x.noRekod,tajuk:x.tajuk||x.namaFail,dari:x.tahunMula||x.tahun||'',kepada:x.tahunAkhir||x.tahun||'',keadaan:x.keadaan||''}))}switchView('view-borang-10');showToast('✅ Rekod dipindahkan ke Borang Arkib 10/08.')}
+
+
         // --- NAVIGATION & VIEWS ---
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -2390,6 +2710,7 @@ Johor Darul Ta'zim.</textarea>
             
             if (viewId === 'view-dashboard') renderDashboardStatsAndCharts();
             if (viewId === 'view-rekod-buku') renderBooksTable();
+            if (viewId === 'view-bahan-bukan-bercetak') renderBBTable();
             if (viewId === 'view-senarai-permohonan') renderApplicationsTable();
             if (viewId === 'view-arkib-dokumen') renderArchiveTable();
             if (viewId === 'view-log-aktiviti') renderActivityLogs();
@@ -2444,7 +2765,7 @@ Johor Darul Ta'zim.</textarea>
         // --- FIREBASE CONFIG ---
         // Gantikan nilai di bawah dengan config Web App dari Firebase Console.
         const firebaseConfig = {
-             apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
+            apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
   authDomain: "disposa-book.firebaseapp.com",
   projectId: "disposa-book",
   storageBucket: "disposa-book.firebasestorage.app",
@@ -2460,6 +2781,8 @@ Johor Darul Ta'zim.</textarea>
         let db = null;
         let auth = null;
         let rekodPelupusanUnsubscribe = null;
+        let bahanBukanBercetakUnsubscribe = null;
+        const BAHAN_BUKAN_BERCETAK_COLLECTION = 'bahan_bukan_bercetak';
         const REKOD_PELUPUSAN_COLLECTION = 'rekod_pelupusan';
 
         function isFirebaseConfigReady() {
@@ -2498,6 +2821,8 @@ Johor Darul Ta'zim.</textarea>
             const stamp = firebase.firestore.FieldValue.serverTimestamp();
 
             batch.set(col.doc('books'), { items: booksData, updatedAt: stamp });
+            batch.set(col.doc('form8'), { items: form8Data, updatedAt: stamp });
+            batch.set(col.doc('form10'), { items: form10Data, updatedAt: stamp });
             batch.set(col.doc('form9'), { items: form9Data, updatedAt: stamp });
             batch.set(col.doc('form12'), { items: form12Data, updatedAt: stamp });
             batch.set(col.doc('letters'), { items: lettersData, updatedAt: stamp });
@@ -2638,6 +2963,8 @@ Johor Darul Ta'zim.</textarea>
                     const value = doc.data() || {};
                     switch (doc.id) {
                         case 'books': booksData = Array.isArray(value.items) ? value.items : booksData; break;
+                        case 'form8': form8Data = Array.isArray(value.items) ? value.items : form8Data; break;
+                        case 'form10': form10Data = Array.isArray(value.items) ? value.items : form10Data; break;
                         case 'form9': form9Data = Array.isArray(value.items) ? value.items : form9Data; break;
                         case 'form12': form12Data = Array.isArray(value.items) ? value.items : form12Data; break;
                         case 'letters': lettersData = Array.isArray(value.items) ? value.items : lettersData; break;
@@ -2649,6 +2976,8 @@ Johor Darul Ta'zim.</textarea>
 
                 // Kekalkan localStorage sebagai salinan tempatan/fallback.
                 localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(booksData));
+                localStorage.setItem(STORAGE_KEYS.FORM8, JSON.stringify(form8Data));
+                localStorage.setItem(STORAGE_KEYS.FORM10, JSON.stringify(form10Data));
                 localStorage.setItem(STORAGE_KEYS.FORM9, JSON.stringify(form9Data));
                 localStorage.setItem(STORAGE_KEYS.FORM12, JSON.stringify(form12Data));
                 localStorage.setItem(STORAGE_KEYS.LETTERS, JSON.stringify(lettersData));
@@ -2782,10 +3111,12 @@ Johor Darul Ta'zim.</textarea>
 
                 await loadAllFromFirestore();
                 startRekodPelupusanRealtimeSync();
+                startBahanBukanBercetakRealtimeSync();
 
                 switchView('view-dashboard');
                 addActivityLog(`Admin ${firebaseUser.email || email} log masuk.`);
                 showToast('✅ Log masuk berjaya.');
+                setTimeout(() => showPssAiAssistant(true), 450);
 
                 if (emailInput) emailInput.value = '';
                 if (passwordInput) passwordInput.value = '';
@@ -2827,7 +3158,9 @@ Johor Darul Ta'zim.</textarea>
                 console.error('Firebase logout error:', error);
             }
 
+            if (bahanBukanBercetakUnsubscribe) { try { bahanBukanBercetakUnsubscribe(); } catch (e) {} bahanBukanBercetakUnsubscribe = null; }
             localStorage.removeItem(STORAGE_KEYS.USER);
+            if (typeof hidePssAiAssistantCompletely === 'function') hidePssAiAssistantCompletely();
             updateLoginUI();
             switchView('view-dashboard');
             showLoginGate();
@@ -3873,162 +4206,23 @@ Johor Darul Ta'zim.</textarea>
 
         function normalizeGeminiSuggestion(data) {
             const root = data?.result || data?.data || data?.suggestion || data || {};
-            const formRaw = String(root.borang_arkib || root.borangArkib || root.recommended_form || root.form || '').toUpperCase();
-            let borangArkib = '';
-            if (formRaw.includes('8')) borangArkib = '8/08';
-            else if (formRaw.includes('9')) borangArkib = '9/08';
-            else if (formRaw.includes('10')) borangArkib = '10/08';
-            return {
-                jenisBahan: root.jenis_bahan || root.jenisBahan || root.material_type || root.type || '',
-                kategori: root.kategori || root.category || '',
-                format: root.format || root.format_bahan || root.material_format || '',
-                cadanganPerekodan: root.cadangan_perekodan || root.cadanganPerekodan || root.recording_suggestion || root.cadangan || '',
-                borangArkib,
-                alasanBorang: root.alasan_borang || root.alasanBorang || root.form_reason || root.reason || '',
-                cadanganPelupusan: root.cadangan_pelupusan || root.cadanganPelupusan || root.disposal_suggestion || 'Musnah',
-                sebabPelupusan: root.sebab_pelupusan || root.sebabPelupusan || root.disposal_reason || '',
-                perihal: root.perihal || root.description || root.record_description || '',
-                noRujukan: root.no_rujukan || root.noRujukan || root.reference_no || '',
-                tarikh: root.tarikh || root.date || root.tahun || root.year || '',
-                unitRekod: root.unit_rekod || root.unitRekod || root.record_units || '1',
-                sistemAplikasi: root.sistem_aplikasi || root.sistemAplikasi || root.application_system || '',
-                saizBit: root.saiz_bit || root.saizBit || root.size_bits || root.digital_size || '',
-                jenisMedia: root.jenis_media || root.jenisMedia || root.media_type || '',
-                jumlahMedia: root.jumlah_media || root.jumlahMedia || root.media_units || '1',
-                lokasiRekod: root.lokasi_rekod || root.lokasiRekod || root.record_location || '',
-                keadaanMedia: root.keadaan_media || root.keadaanMedia || root.media_condition || '',
-                tajukCadangan: root.tajuk_cadangan || root.tajukCadangan || root.title || '',
-                penulis: root.penulis || root.author || '',
-                penerbit: root.penerbit || root.publisher || '',
-                tahun: root.tahun || root.year || '',
-                isbn: root.isbn || root.ISBN || ''
-            };
+            return { jenisBahan:root.jenis_bahan||root.jenisBahan||root.material_type||root.type||'', kategori:root.kategori||root.category||'', format:root.format||root.format_bahan||root.material_format||'', cadanganPerekodan:root.cadangan_perekodan||root.cadanganPerekodan||root.recording_suggestion||root.cadangan||'', tajukCadangan:root.tajuk_cadangan||root.tajukCadangan||root.title||'', penulis:root.penulis||root.author||'', penerbit:root.penerbit||root.publisher||'', tahun:root.tahun||root.year||'', isbn:root.isbn||root.ISBN||'' };
         }
 
         async function analyzeBookWithGemini() {
-            const url = getGeminiBackendUrl();
-            if (!url) { showToast('⚠️ Tetapkan URL Backend Gemini di Tetapan Sistem dahulu.', 'warning'); return; }
-            const btn = document.getElementById('geminiAnalyzeBtn');
-            const sourceText = document.getElementById('bm_ai_input')?.value?.trim() || '';
-            const payload = {
-                action: 'analyze_material_for_archive_disposal',
-                source: 'DISPORA_BOOK',
-                input: sourceText,
-                current_record: {
-                    tajuk: document.getElementById('bm_tajuk')?.value || '',
-                    penulis: document.getElementById('bm_penulis')?.value || '',
-                    penerbit: document.getElementById('bm_penerbit')?.value || '',
-                    tahun: document.getElementById('bm_tahun')?.value || '',
-                    isbn: document.getElementById('bm_isbn')?.value || '',
-                    kategori: document.getElementById('bm_kategori')?.value || '',
-                    keadaan: document.getElementById('bm_keadaan')?.value || '',
-                    lokasi: document.getElementById('bm_lokasi')?.value || ''
-                },
-                archive_forms: {
-                    '8/08': 'Rekod Pandang Dengar',
-                    '9/08': 'Rekod Terbitan dan Bahan Bercetak',
-                    '10/08': 'Rekod Elektronik'
-                },
-                instruction: 'Pilih SATU borang Arkib yang paling sesuai antara 8/08, 9/08 dan 10/08. Beri alasan ringkas dan cadangkan nilai medan pelupusan yang relevan. Jangan mereka maklumat yang tidak dapat dikenal pasti.',
-                expected_output: [
-                    'jenis_bahan','kategori','format','cadangan_perekodan','borang_arkib','alasan_borang',
-                    'cadangan_pelupusan','sebab_pelupusan','perihal','no_rujukan','tarikh','unit_rekod',
-                    'sistem_aplikasi','saiz_bit','jenis_media','jumlah_media','lokasi_rekod','keadaan_media',
-                    'tajuk_cadangan','penulis','penerbit','tahun','isbn'
-                ]
-            };
-            if (!sourceText && !payload.current_record.tajuk && !payload.current_record.isbn) {
-                showToast('⚠️ Masukkan tajuk, ISBN atau maklumat bahan untuk dianalisis.', 'warning'); return;
-            }
-            try {
-                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menganalisis...'; }
-                const headers = await getGeminiAuthHeaders();
-                const response = await fetch(url, { method:'POST', headers, body:JSON.stringify(payload) });
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const data = await response.json();
-                geminiLastSuggestion = normalizeGeminiSuggestion(data);
-                renderGeminiSuggestion(geminiLastSuggestion);
-                updateGeminiUiStatus(true);
-                showToast('✅ AI selesai menentukan cadangan Borang Arkib. Semak sebelum digunakan.');
-            } catch(error) {
-                console.error(error);
-                showToast('❌ Analisis Gemini gagal: ' + (error.message || 'Ralat tidak diketahui'), 'error');
-            } finally {
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sparkles mr-1"></i> Analisis AI'; }
-            }
+            const url = getGeminiBackendUrl(); if (!url) { showToast('⚠️ Tetapkan URL Backend Gemini di Tetapan Sistem dahulu.', 'warning'); return; }
+            const btn=document.getElementById('geminiAnalyzeBtn'); const sourceText=document.getElementById('bm_ai_input')?.value?.trim()||'';
+            const payload={action:'analyze_material',source:'DISPORA_BOOK',input:sourceText,current_record:{tajuk:document.getElementById('bm_tajuk')?.value||'',penulis:document.getElementById('bm_penulis')?.value||'',penerbit:document.getElementById('bm_penerbit')?.value||'',tahun:document.getElementById('bm_tahun')?.value||'',isbn:document.getElementById('bm_isbn')?.value||'',kategori:document.getElementById('bm_kategori')?.value||'',keadaan:document.getElementById('bm_keadaan')?.value||'',lokasi:document.getElementById('bm_lokasi')?.value||''},expected_output:['jenis_bahan','kategori','format','cadangan_perekodan','tajuk_cadangan','penulis','penerbit','tahun','isbn']};
+            if(!sourceText&&!payload.current_record.tajuk&&!payload.current_record.isbn){showToast('⚠️ Masukkan tajuk, ISBN atau maklumat bahan untuk dianalisis.','warning');return;}
+            try { if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menganalisis...';} const headers=await getGeminiAuthHeaders(); const response=await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)}); if(!response.ok) throw new Error('HTTP '+response.status); const data=await response.json(); geminiLastSuggestion=normalizeGeminiSuggestion(data); renderGeminiSuggestion(geminiLastSuggestion); updateGeminiUiStatus(true); showToast('✅ Analisis Gemini selesai. Semak cadangan sebelum digunakan.'); }
+            catch(error){console.error(error);showToast('❌ Analisis Gemini gagal: '+(error.message||'Ralat tidak diketahui'),'error');}
+            finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-sparkles mr-1"></i> Analisis AI';}}
         }
 
         function escapeGeminiText(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
-        function getArkibFormLabel(form){return form==='8/08'?'Borang Arkib 8/08 - Rekod Pandang Dengar':form==='9/08'?'Borang Arkib 9/08 - Rekod Terbitan & Bahan Bercetak':form==='10/08'?'Borang Arkib 10/08 - Rekod Elektronik':'Belum dapat ditentukan';}
-        function renderGeminiSuggestion(x){
-            const box=document.getElementById('geminiSuggestionBox'); const apply=document.getElementById('geminiApplyBtn'); if(!box)return;
-            const formClass=x.borangArkib?'bg-emerald-50 border-emerald-200 text-emerald-800':'bg-amber-50 border-amber-200 text-amber-800';
-            box.innerHTML=`
-                <div class="font-bold text-violet-900 mb-2">Cadangan AI untuk pelupusan, sila semak sebelum guna</div>
-                <div class="rounded-lg border p-3 mb-3 ${formClass}">
-                    <div class="text-[10px] uppercase font-bold tracking-wide">Borang Arkib Dicadangkan</div>
-                    <div class="font-bold text-sm mt-1">${escapeGeminiText(getArkibFormLabel(x.borangArkib))}</div>
-                    <div class="mt-1">${escapeGeminiText(x.alasanBorang||'AI tidak memberikan alasan.')}</div>
-                </div>
-                <div class="grid grid-cols-[120px_1fr] gap-x-2 gap-y-1">
-                    <div class="font-semibold">Jenis bahan</div><div>${escapeGeminiText(x.jenisBahan||'-')}</div>
-                    <div class="font-semibold">Kategori</div><div>${escapeGeminiText(x.kategori||'-')}</div>
-                    <div class="font-semibold">Format</div><div>${escapeGeminiText(x.format||'-')}</div>
-                    <div class="font-semibold">Perekodan</div><div>${escapeGeminiText(x.cadanganPerekodan||'-')}</div>
-                    <div class="font-semibold">Pelupusan</div><div>${escapeGeminiText(x.cadanganPelupusan||'-')}</div>
-                    <div class="font-semibold">Sebab</div><div>${escapeGeminiText(x.sebabPelupusan||'-')}</div>
-                    <div class="font-semibold">Perihal</div><div>${escapeGeminiText(x.perihal||'-')}</div>
-                </div>
-                ${x.borangArkib?'<div class="mt-3 text-[10px] text-slate-500">Klik <b>Guna Cadangan</b> untuk isi medan berkaitan dan pindah ke borang yang dicadangkan. Rekod tidak disimpan secara automatik.</div>':''}`;
-            box.classList.remove('hidden'); if(apply)apply.classList.remove('hidden');
-        }
+        function renderGeminiSuggestion(x){const box=document.getElementById('geminiSuggestionBox');const apply=document.getElementById('geminiApplyBtn');if(!box)return;box.innerHTML='<div class="font-bold text-violet-900 mb-2">Cadangan AI, sila semak sebelum guna</div><div class="grid grid-cols-[120px_1fr] gap-x-2 gap-y-1"><div class="font-semibold">Jenis bahan</div><div>'+escapeGeminiText(x.jenisBahan||'-')+'</div><div class="font-semibold">Kategori</div><div>'+escapeGeminiText(x.kategori||'-')+'</div><div class="font-semibold">Format</div><div>'+escapeGeminiText(x.format||'-')+'</div><div class="font-semibold">Perekodan</div><div>'+escapeGeminiText(x.cadanganPerekodan||'-')+'</div></div>';box.classList.remove('hidden');if(apply)apply.classList.remove('hidden');}
         function ensureSelectOption(el,value){if(!el||!value)return;const match=Array.from(el.options).find(o=>o.value.toLowerCase()===String(value).toLowerCase());el.value=match?match.value:'Lain-lain';}
-        function setIfEmpty(id,value){const el=document.getElementById(id);if(el&&value&&!String(el.value||'').trim())el.value=value;}
-        function clearBlankRows(selector){document.querySelectorAll(selector).forEach(r=>{const fields=r.querySelectorAll('input,textarea,select');if(Array.from(fields).every(f=>!String(f.value||'').trim()))r.remove();});}
-        function applyGeminiToForm8(x){
-            if(!document.getElementById('f8_id')?.value)createNewForm8();
-            clearBlankRows('#f8_tbody tr');
-            addForm8Row({ruj:x.noRujukan||'',tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',perihal:x.perihal||x.cadanganPerekodan||'',tarikh:x.tarikh||x.tahun||'',format:x.format||'',unit:x.unitRekod||'1',cadangan:x.cadanganPelupusan||'Musnah',catatan:x.sebabPelupusan||''});
-            setIfEmpty('f8_jumlah_unit',x.unitRekod||'1');
-            switchView('view-borang-8');
-        }
-        function applyGeminiToForm9(x){
-            if(!document.getElementById('f9_id')?.value)createNewForm9();
-            clearBlankRows('#f9_tbody tr');
-            addForm9Row({tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',tahun:x.tahun||x.tarikh||'',jumlah:(x.unitRekod||'1')+' unit',cadangan:x.cadanganPelupusan||'Musnah',catatan:x.sebabPelupusan||x.perihal||''});
-            switchView('view-borang-9');
-        }
-        function applyGeminiToForm10(x){
-            if(!document.getElementById('f10_id')?.value)createNewForm10();
-            setIfEmpty('f10_tajuk_siri',x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'');
-            setIfEmpty('f10_sistem_aplikasi',x.sistemAplikasi);
-            setIfEmpty('f10_format_rekod',x.format);
-            setIfEmpty('f10_saiz_bit',x.saizBit);
-            setIfEmpty('f10_jenis_media',x.jenisMedia||x.format);
-            setIfEmpty('f10_jumlah_media',x.jumlahMedia||x.unitRekod||'1');
-            setIfEmpty('f10_tahun',x.tahun||x.tarikh);
-            setIfEmpty('f10_lokasi',x.lokasiRekod||document.getElementById('bm_lokasi')?.value||'');
-            setIfEmpty('f10_sebab',x.sebabPelupusan);
-            setIfEmpty('f10_cadangan',x.cadanganPelupusan||'Musnah');
-            setIfEmpty('f10_perihal',x.perihal||x.cadanganPerekodan);
-            clearBlankRows('#f10_lamp_tbody tr');
-            addForm10LampRow({ruj:x.noRujukan||'',tajuk:x.tajukCadangan||document.getElementById('bm_tajuk')?.value||'',dari:x.tahun||'',kepada:x.tahun||'',keadaan:x.keadaanMedia||document.getElementById('bm_keadaan')?.value||''});
-            switchView('view-borang-10');
-        }
-        function applyGeminiSuggestion(){
-            const x=geminiLastSuggestion;if(!x){showToast('⚠️ Tiada cadangan AI untuk digunakan.','warning');return;}
-            if(x.tajukCadangan&&!document.getElementById('bm_tajuk').value)document.getElementById('bm_tajuk').value=x.tajukCadangan;
-            if(x.penulis&&!document.getElementById('bm_penulis').value)document.getElementById('bm_penulis').value=x.penulis;
-            if(x.penerbit&&!document.getElementById('bm_penerbit').value)document.getElementById('bm_penerbit').value=x.penerbit;
-            if(x.tahun&&!document.getElementById('bm_tahun').value)document.getElementById('bm_tahun').value=x.tahun;
-            if(x.isbn&&!document.getElementById('bm_isbn').value)document.getElementById('bm_isbn').value=x.isbn;
-            ensureSelectOption(document.getElementById('bm_kategori'),x.kategori);
-            if(x.borangArkib==='8/08')applyGeminiToForm8(x);
-            else if(x.borangArkib==='9/08')applyGeminiToForm9(x);
-            else if(x.borangArkib==='10/08')applyGeminiToForm10(x);
-            else {showToast('⚠️ AI belum dapat menentukan Borang Arkib. Semak maklumat bahan dan analisis semula.','warning');return;}
-            showToast('✅ Cadangan AI dimasukkan ke '+getArkibFormLabel(x.borangArkib)+'. Sila semak sebelum Simpan.');
-        }
+        function applyGeminiSuggestion(){const x=geminiLastSuggestion;if(!x){showToast('⚠️ Tiada cadangan AI untuk digunakan.','warning');return;}if(x.tajukCadangan&&!document.getElementById('bm_tajuk').value)document.getElementById('bm_tajuk').value=x.tajukCadangan;if(x.penulis&&!document.getElementById('bm_penulis').value)document.getElementById('bm_penulis').value=x.penulis;if(x.penerbit&&!document.getElementById('bm_penerbit').value)document.getElementById('bm_penerbit').value=x.penerbit;if(x.tahun&&!document.getElementById('bm_tahun').value)document.getElementById('bm_tahun').value=x.tahun;if(x.isbn&&!document.getElementById('bm_isbn').value)document.getElementById('bm_isbn').value=x.isbn;ensureSelectOption(document.getElementById('bm_kategori'),x.kategori);showToast('✅ Cadangan AI digunakan pada medan yang sesuai. Sila semak sebelum Simpan Rekod.');}
 
         // --- AUTOSAVE TIMER ENGINE ---
         function setupAutoSaveTriggers() {
@@ -4133,6 +4327,185 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (err) {
         console.warn('Logo tersimpan tidak dapat dimuatkan:', err);
     }
+});
+</script>
+
+
+<!-- PENGAWAS PUSAT SUMBER AI -->
+<button id="pssAiLauncher" type="button" onclick="togglePssAiAssistant()" aria-label="Buka Pengawas PSS AI" title="Pengawas PSS AI">
+    <div class="pss-prefect-avatar small" aria-hidden="true">
+        <div class="pss-prefect-hair"></div><div class="pss-prefect-head"></div>
+        <span class="pss-prefect-eye left"></span><span class="pss-prefect-eye right"></span><span class="pss-prefect-smile"></span>
+        <div class="pss-prefect-body"><span class="pss-prefect-collar-left"></span><span class="pss-prefect-collar-right"></span><span class="pss-prefect-tie"></span><span class="pss-prefect-badge"></span></div>
+    </div>
+    <span class="pss-launcher-badge"><i class="fa-solid fa-sparkles"></i></span>
+</button>
+
+<section id="pssAiPanel" aria-label="Pengawas PSS AI">
+    <div class="pss-ai-header">
+        <div class="pss-prefect-avatar" aria-hidden="true">
+            <div class="pss-prefect-hair"></div><div class="pss-prefect-head"></div>
+            <span class="pss-prefect-eye left"></span><span class="pss-prefect-eye right"></span><span class="pss-prefect-smile"></span>
+            <div class="pss-prefect-body"><span class="pss-prefect-collar-left"></span><span class="pss-prefect-collar-right"></span><span class="pss-prefect-tie"></span><span class="pss-prefect-badge"></span></div>
+        </div>
+        <div class="pss-ai-header-copy">
+            <h3>Pengawas PSS AI</h3>
+            <p>DISPORA BOOK • Pembantu rekod & pelupusan</p>
+        </div>
+        <button class="pss-ai-close" type="button" onclick="closePssAiAssistant()" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="pssAiMessages" class="pss-ai-messages"></div>
+    <div class="pss-ai-quick">
+        <button type="button" onclick="pssAiQuickAsk('Apa beza Arkib 8/08 dan Arkib 10/08?')">Arkib 8 vs 10</button>
+        <button type="button" onclick="pssAiQuickAsk('Bantu saya pilih borang yang sesuai untuk bahan bukan bercetak.')">Pilih borang</button>
+        <button type="button" onclick="pssAiQuickAsk('Bagaimana cara daftar rekod bahan bukan bercetak?')">Daftar rekod</button>
+    </div>
+    <form class="pss-ai-inputbar" onsubmit="sendPssAiMessage(event)">
+        <input id="pssAiInput" type="text" autocomplete="off" placeholder="Tanya Pengawas PSS AI..." maxlength="800">
+        <button id="pssAiSendBtn" class="pss-ai-send" type="submit" title="Hantar"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
+    <div class="pss-ai-footnote">Cadangan AI perlu disemak sebelum digunakan pada rekod rasmi.</div>
+</section>
+
+
+<script>
+// =========================================================
+// PENGAWAS PSS AI
+// Menggunakan backend Gemini selamat yang sama jika telah ditetapkan.
+// Jika backend belum tersedia, pembantu tetap memberi panduan asas sistem.
+// =========================================================
+let pssAiGreetingShown = false;
+
+function escapePssAiText(value) {
+    return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function appendPssAiMessage(text, role='bot', extraClass='') {
+    const box = document.getElementById('pssAiMessages');
+    if (!box) return null;
+    const el = document.createElement('div');
+    el.className = `pss-ai-msg ${role} ${extraClass}`.trim();
+    el.innerHTML = escapePssAiText(text).replace(/\n/g,'<br>');
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+    return el;
+}
+
+function showPssAiAssistant(forceGreeting=false) {
+    const launcher = document.getElementById('pssAiLauncher');
+    const panel = document.getElementById('pssAiPanel');
+    if (launcher) launcher.style.display = 'flex';
+    if (panel) panel.classList.add('pss-ai-open');
+
+    if (!pssAiGreetingShown || forceGreeting) {
+        const user = localStorage.getItem(typeof STORAGE_KEYS !== 'undefined' ? STORAGE_KEYS.USER : '') || 'Admin';
+        appendPssAiMessage(`Assalamualaikum dan selamat datang. Saya Pengawas PSS AI. Saya boleh bantu mengurus rekod DISPORA BOOK, termasuk Arkib 8/08, Arkib 9/08, Arkib 10/08 dan bahan bukan bercetak.\n\nApa yang mahu dilakukan sekarang?`,'bot');
+        pssAiGreetingShown = true;
+    }
+    setTimeout(() => document.getElementById('pssAiInput')?.focus(), 120);
+}
+
+function closePssAiAssistant() {
+    document.getElementById('pssAiPanel')?.classList.remove('pss-ai-open');
+}
+
+function togglePssAiAssistant() {
+    const panel = document.getElementById('pssAiPanel');
+    if (!panel) return;
+    if (panel.classList.contains('pss-ai-open')) closePssAiAssistant();
+    else showPssAiAssistant(false);
+}
+
+function hidePssAiAssistantCompletely() {
+    document.getElementById('pssAiPanel')?.classList.remove('pss-ai-open');
+    const launcher = document.getElementById('pssAiLauncher');
+    if (launcher) launcher.style.display = 'none';
+    const messages = document.getElementById('pssAiMessages');
+    if (messages) messages.innerHTML = '';
+    pssAiGreetingShown = false;
+}
+
+function pssAiQuickAsk(text) {
+    const input = document.getElementById('pssAiInput');
+    if (input) input.value = text;
+    sendPssAiMessage(new Event('submit'));
+}
+
+function getPssAiLocalReply(message) {
+    const q = String(message || '').toLowerCase();
+    if (q.includes('8/08') && q.includes('10/08')) return 'Arkib 8/08 digunakan untuk Rekod Pandang Dengar. Arkib 10/08 digunakan untuk Rekod Elektronik. Pilih jenis rekod dahulu sebelum menjana borang.';
+    if (q.includes('8/08') || q.includes('borang 8')) return 'Untuk Rekod Pandang Dengar, gunakan modul Arkib 8/08. Daftar rekod, semak butiran, pilih rekod yang hendak dilupuskan dan jana borang.';
+    if (q.includes('10/08') || q.includes('borang 10')) return 'Untuk Rekod Elektronik, gunakan modul Arkib 10/08. Maklumat seperti format rekod, saiz data, jenis media, tahun diliputi dan lokasi rekod perlu disemak sebelum pelupusan.';
+    if (q.includes('bukan bercetak') || q.includes('bukan cetak')) return 'Buka menu Bahan Bukan Bercetak. Data daripada Web, Android atau iOS boleh diselaraskan melalui Firestore yang sama. Pilih Arkib 8/08 atau Arkib 10/08 mengikut jenis rekod.';
+    if (q.includes('daftar') || q.includes('rekod')) return 'Untuk mendaftar rekod, buka modul berkaitan, tekan Daftar Rekod, lengkapkan medan wajib dan simpan. No. Rekod akan digunakan untuk mengenal pasti rekod dalam dashboard.';
+    if (q.includes('pelupusan')) return 'Sebelum pelupusan, semak jenis rekod, status, sebab pelupusan dan butiran bahan. Pilih rekod yang sesuai sahaja sebelum menjana borang rasmi.';
+    return 'Saya boleh bantu tentang penggunaan DISPORA BOOK, Arkib 8/08, Arkib 9/08, Arkib 10/08, pendaftaran bahan dan proses pelupusan. Jika backend Gemini sudah disambungkan, saya juga boleh memberi jawapan AI yang lebih terperinci.';
+}
+
+async function sendPssAiMessage(event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    const input = document.getElementById('pssAiInput');
+    const btn = document.getElementById('pssAiSendBtn');
+    const message = (input?.value || '').trim();
+    if (!message) return;
+
+    appendPssAiMessage(message,'user');
+    if (input) input.value = '';
+    if (btn) btn.disabled = true;
+    const typing = appendPssAiMessage('Sedang menyediakan jawapan...','bot','typing');
+
+    try {
+        const url = (typeof getGeminiBackendUrl === 'function') ? getGeminiBackendUrl() : '';
+        if (!url) {
+            if (typing) typing.remove();
+            appendPssAiMessage(getPssAiLocalReply(message),'bot');
+            return;
+        }
+
+        const headers = (typeof getGeminiAuthHeaders === 'function') ? await getGeminiAuthHeaders() : {'Content-Type':'application/json'};
+        const currentView = document.querySelector('.view-section:not(.hidden)')?.id || 'view-dashboard';
+        const payload = {
+            action: 'chat_assistant',
+            source: 'DISPORA_BOOK',
+            assistant_role: 'Pengawas Pusat Sumber AI',
+            language: 'ms',
+            message,
+            context: {
+                currentView,
+                modules: ['Arkib 8/08','Arkib 9/08','Arkib 10/08','Bahan Bukan Bercetak'],
+                instruction: 'Jawab ringkas, jelas dan fokus kepada pengurusan rekod serta pelupusan dalam DISPORA BOOK.'
+            }
+        };
+        const response = await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)});
+        if (!response.ok) throw new Error('HTTP '+response.status);
+        const data = await response.json();
+        let answer = data?.answer || data?.reply || data?.message || data?.result?.answer || data?.result?.reply || data?.result?.text || data?.data?.answer || '';
+        if (typeof answer !== 'string') answer = JSON.stringify(answer);
+        if (!answer) answer = getPssAiLocalReply(message);
+        if (typing) typing.remove();
+        appendPssAiMessage(answer,'bot');
+        if (typeof updateGeminiUiStatus === 'function') updateGeminiUiStatus(true);
+    } catch (error) {
+        console.warn('Pengawas PSS AI backend:', error);
+        if (typing) typing.remove();
+        appendPssAiMessage(getPssAiLocalReply(message) + '\n\nNota: Backend AI tidak dapat dihubungi buat masa ini.','bot');
+    } finally {
+        if (btn) btn.disabled = false;
+        setTimeout(() => input?.focus(), 50);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Jika sesi login Firebase masih aktif selepas refresh, kekalkan launcher tersedia.
+    setTimeout(function() {
+        try {
+            const key = (typeof STORAGE_KEYS !== 'undefined' && STORAGE_KEYS.USER) ? STORAGE_KEYS.USER : null;
+            if (key && localStorage.getItem(key)) {
+                const launcher = document.getElementById('pssAiLauncher');
+                if (launcher) launcher.style.display = 'flex';
+            }
+        } catch (e) {}
+    }, 700);
 });
 </script>
 
