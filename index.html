@@ -4176,7 +4176,14 @@ Johor Darul Ta'zim.</textarea>
 
         function getGeminiBackendUrl() {
             const uiValue = document.getElementById('set_gemini_backend_url')?.value?.trim();
-            return uiValue || settingsData.geminiBackendUrl || '';
+            const savedValue = (typeof settingsData !== 'undefined' && settingsData?.geminiBackendUrl) ? String(settingsData.geminiBackendUrl).trim() : '';
+            if (uiValue) return uiValue;
+            if (savedValue) return savedValue;
+            // Jika Cloud Function bernama disporaGemini dideploy dalam Firebase project yang sama,
+            // URL backend dibina secara automatik tanpa menyimpan API key dalam HTML.
+            const projectId = (typeof firebaseConfig !== 'undefined' && firebaseConfig?.projectId) ? String(firebaseConfig.projectId).trim() : '';
+            if (projectId) return `https://asia-southeast1-${projectId}.cloudfunctions.net/disporaGemini`;
+            return '';
         }
 
         function updateGeminiUiStatus(connected = null) {
@@ -4350,7 +4357,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="pss-ai-header-copy">
             <h3>Pengawas PSS AI</h3>
-            <p>DISPORA BOOK • Pembantu rekod & pelupusan</p>
+            <p>DISPORA BOOK • Pembantu AI bebas & pintar</p>
         </div>
         <button class="pss-ai-close" type="button" onclick="closePssAiAssistant()" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
     </div>
@@ -4361,23 +4368,35 @@ document.addEventListener('DOMContentLoaded', function() {
         <button type="button" onclick="pssAiQuickAsk('Bagaimana cara daftar rekod bahan bukan bercetak?')">Daftar rekod</button>
     </div>
     <form class="pss-ai-inputbar" onsubmit="sendPssAiMessage(event)">
-        <input id="pssAiInput" type="text" autocomplete="off" placeholder="Tanya Pengawas PSS AI..." maxlength="800">
+        <input id="pssAiInput" type="text" autocomplete="off" placeholder="Tanya apa sahaja kepada Pengawas PSS AI..." maxlength="800">
         <button id="pssAiSendBtn" class="pss-ai-send" type="submit" title="Hantar"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
-    <div class="pss-ai-footnote">Cadangan AI perlu disemak sebelum digunakan pada rekod rasmi.</div>
+    <div class="pss-ai-footnote">Chatbot boleh menjawab soalan bebas. Maklumat rasmi berkaitan rekod/pelupusan tetap perlu disemak sebelum digunakan.</div>
 </section>
 
 
 <script>
 // =========================================================
-// PENGAWAS PSS AI
-// Menggunakan backend Gemini selamat yang sama jika telah ditetapkan.
-// Jika backend belum tersedia, pembantu tetap memberi panduan asas sistem.
+// PENGAWAS PSS AI - MOD PENUH
+// Chat sebenar melalui backend Gemini selamat, multi-turn history,
+// konteks modul semasa. Semua soalan pengguna dihantar ke Gemini; soalan cepat hanyalah cadangan.
 // =========================================================
 let pssAiGreetingShown = false;
+let pssAiBusy = false;
+const PSS_AI_HISTORY_KEY = 'dispora_pss_ai_history_v2';
+const PSS_AI_MAX_HISTORY = 20;
+let pssAiHistory = [];
 
 function escapePssAiText(value) {
     return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function pssAiFormatText(text) {
+    let safe = escapePssAiText(text);
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 text-slate-800">$1</code>');
+    safe = safe.replace(/\n/g,'<br>');
+    return safe;
 }
 
 function appendPssAiMessage(text, role='bot', extraClass='') {
@@ -4385,10 +4404,44 @@ function appendPssAiMessage(text, role='bot', extraClass='') {
     if (!box) return null;
     const el = document.createElement('div');
     el.className = `pss-ai-msg ${role} ${extraClass}`.trim();
-    el.innerHTML = escapePssAiText(text).replace(/\n/g,'<br>');
+    el.innerHTML = pssAiFormatText(text);
     box.appendChild(el);
     box.scrollTop = box.scrollHeight;
     return el;
+}
+
+function loadPssAiHistory() {
+    try {
+        const raw = localStorage.getItem(PSS_AI_HISTORY_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        pssAiHistory = Array.isArray(arr) ? arr.slice(-PSS_AI_MAX_HISTORY) : [];
+    } catch (_) { pssAiHistory = []; }
+}
+
+function savePssAiHistory() {
+    try { localStorage.setItem(PSS_AI_HISTORY_KEY, JSON.stringify(pssAiHistory.slice(-PSS_AI_MAX_HISTORY))); } catch (_) {}
+}
+
+function pushPssAiHistory(role, text) {
+    pssAiHistory.push({ role, text: String(text || '').slice(0, 5000), ts: Date.now() });
+    if (pssAiHistory.length > PSS_AI_MAX_HISTORY) pssAiHistory = pssAiHistory.slice(-PSS_AI_MAX_HISTORY);
+    savePssAiHistory();
+}
+
+function renderPssAiHistory() {
+    const box = document.getElementById('pssAiMessages');
+    if (!box) return;
+    box.innerHTML = '';
+    pssAiHistory.forEach(item => appendPssAiMessage(item.text, item.role === 'user' ? 'user' : 'bot'));
+}
+
+function resetPssAiConversation() {
+    pssAiHistory = [];
+    savePssAiHistory();
+    const box = document.getElementById('pssAiMessages');
+    if (box) box.innerHTML = '';
+    pssAiGreetingShown = false;
+    showPssAiAssistant(true);
 }
 
 function showPssAiAssistant(forceGreeting=false) {
@@ -4397,9 +4450,14 @@ function showPssAiAssistant(forceGreeting=false) {
     if (launcher) launcher.style.display = 'flex';
     if (panel) panel.classList.add('pss-ai-open');
 
-    if (!pssAiGreetingShown || forceGreeting) {
-        const user = localStorage.getItem(typeof STORAGE_KEYS !== 'undefined' ? STORAGE_KEYS.USER : '') || 'Admin';
-        appendPssAiMessage(`Assalamualaikum dan selamat datang. Saya Pengawas PSS AI. Saya boleh bantu mengurus rekod DISPORA BOOK, termasuk Arkib 8/08, Arkib 9/08, Arkib 10/08 dan bahan bukan bercetak.\n\nApa yang mahu dilakukan sekarang?`,'bot');
+    if (!pssAiHistory.length) loadPssAiHistory();
+    const box = document.getElementById('pssAiMessages');
+    if (box && !box.children.length && pssAiHistory.length) renderPssAiHistory();
+
+    if ((!pssAiGreetingShown && !pssAiHistory.length) || forceGreeting) {
+        const greeting = 'Assalamualaikum dan selamat datang. Saya **Pengawas PSS AI**. Saya boleh membantu penggunaan DISPORA BOOK, pendaftaran bahan, Arkib 8/08, Arkib 9/08, Arkib 10/08, bahan bukan bercetak, carian rekod dan proses pelupusan.\n\nTanya sahaja apa yang cikgu mahu lakukan.';
+        appendPssAiMessage(greeting,'bot');
+        if (!pssAiHistory.length) pushPssAiHistory('assistant', greeting);
         pssAiGreetingShown = true;
     }
     setTimeout(() => document.getElementById('pssAiInput')?.focus(), 120);
@@ -4420,83 +4478,104 @@ function hidePssAiAssistantCompletely() {
     document.getElementById('pssAiPanel')?.classList.remove('pss-ai-open');
     const launcher = document.getElementById('pssAiLauncher');
     if (launcher) launcher.style.display = 'none';
-    const messages = document.getElementById('pssAiMessages');
-    if (messages) messages.innerHTML = '';
     pssAiGreetingShown = false;
 }
 
 function pssAiQuickAsk(text) {
     const input = document.getElementById('pssAiInput');
     if (input) input.value = text;
-    sendPssAiMessage(new Event('submit'));
+    sendPssAiMessage({preventDefault(){}});
 }
 
 function getPssAiLocalReply(message) {
-    const q = String(message || '').toLowerCase();
-    if (q.includes('8/08') && q.includes('10/08')) return 'Arkib 8/08 digunakan untuk Rekod Pandang Dengar. Arkib 10/08 digunakan untuk Rekod Elektronik. Pilih jenis rekod dahulu sebelum menjana borang.';
-    if (q.includes('8/08') || q.includes('borang 8')) return 'Untuk Rekod Pandang Dengar, gunakan modul Arkib 8/08. Daftar rekod, semak butiran, pilih rekod yang hendak dilupuskan dan jana borang.';
-    if (q.includes('10/08') || q.includes('borang 10')) return 'Untuk Rekod Elektronik, gunakan modul Arkib 10/08. Maklumat seperti format rekod, saiz data, jenis media, tahun diliputi dan lokasi rekod perlu disemak sebelum pelupusan.';
-    if (q.includes('bukan bercetak') || q.includes('bukan cetak')) return 'Buka menu Bahan Bukan Bercetak. Data daripada Web, Android atau iOS boleh diselaraskan melalui Firestore yang sama. Pilih Arkib 8/08 atau Arkib 10/08 mengikut jenis rekod.';
-    if (q.includes('daftar') || q.includes('rekod')) return 'Untuk mendaftar rekod, buka modul berkaitan, tekan Daftar Rekod, lengkapkan medan wajib dan simpan. No. Rekod akan digunakan untuk mengenal pasti rekod dalam dashboard.';
-    if (q.includes('pelupusan')) return 'Sebelum pelupusan, semak jenis rekod, status, sebab pelupusan dan butiran bahan. Pilih rekod yang sesuai sahaja sebelum menjana borang rasmi.';
-    return 'Saya boleh bantu tentang penggunaan DISPORA BOOK, Arkib 8/08, Arkib 9/08, Arkib 10/08, pendaftaran bahan dan proses pelupusan. Jika backend Gemini sudah disambungkan, saya juga boleh memberi jawapan AI yang lebih terperinci.';
+    // Tiada lagi jawapan preset berdasarkan kata kunci.
+    // Semua soalan pengguna mesti cuba dihantar ke Gemini dahulu.
+    return 'Saya tidak dapat menghubungi Gemini buat masa ini. Soalan cikgu tidak dihadkan kepada pilihan yang disediakan — sila cuba semula selepas sambungan AI pulih.';
+}
+
+function getPssAiAppContext() {
+    const currentView = document.querySelector('.view-section:not(.hidden)')?.id || 'view-dashboard';
+    const selectedNav = document.querySelector('.nav-item.active-nav span')?.textContent?.trim() || '';
+    const stats = {};
+    ['statJumlahBuku','statJumlahPermohonan','statBorang9','statSuratIringan','bbStatTotal','bbStatArkib8','bbStatArkib10','bbStatMenunggu'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) stats[id] = el.textContent.trim();
+    });
+    return {
+        currentView,
+        selectedNav,
+        stats,
+        firebaseReady: !!(typeof firebaseReady !== 'undefined' && firebaseReady),
+        modules: ['Dashboard','Rekod Buku','Arkib 8/08','Arkib 9/08','Arkib 10/08','Arkib 12/08','Bahan Bukan Bercetak','Surat Iringan','Senarai Permohonan','Arkib Dokumen','Laporan & Analisis'],
+        app: 'DISPORA BOOK'
+    };
 }
 
 async function sendPssAiMessage(event) {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    if (pssAiBusy) return;
     const input = document.getElementById('pssAiInput');
     const btn = document.getElementById('pssAiSendBtn');
     const message = (input?.value || '').trim();
     if (!message) return;
 
     appendPssAiMessage(message,'user');
+    pushPssAiHistory('user', message);
     if (input) input.value = '';
     if (btn) btn.disabled = true;
-    const typing = appendPssAiMessage('Sedang menyediakan jawapan...','bot','typing');
+    pssAiBusy = true;
+    const typing = appendPssAiMessage('Pengawas PSS AI sedang berfikir...','bot','typing');
 
     try {
         const url = (typeof getGeminiBackendUrl === 'function') ? getGeminiBackendUrl() : '';
-        if (!url) {
-            if (typing) typing.remove();
-            appendPssAiMessage(getPssAiLocalReply(message),'bot');
-            return;
-        }
+        if (!url) throw new Error('BACKEND_NOT_CONFIGURED');
 
         const headers = (typeof getGeminiAuthHeaders === 'function') ? await getGeminiAuthHeaders() : {'Content-Type':'application/json'};
-        const currentView = document.querySelector('.view-section:not(.hidden)')?.id || 'view-dashboard';
         const payload = {
             action: 'chat_assistant',
             source: 'DISPORA_BOOK',
             assistant_role: 'Pengawas Pusat Sumber AI',
-            language: 'ms',
+            language: 'ms-MY',
+            chatMode: 'free_chat',
+            allowGeneralQuestions: true,
             message,
-            context: {
-                currentView,
-                modules: ['Arkib 8/08','Arkib 9/08','Arkib 10/08','Bahan Bukan Bercetak'],
-                instruction: 'Jawab ringkas, jelas dan fokus kepada pengurusan rekod serta pelupusan dalam DISPORA BOOK.'
-            }
+            // Hantar sejarah sebelum mesej semasa sahaja; elak mesej pengguna diduplikasi di backend.
+            history: pssAiHistory.slice(0, -1).slice(-12).map(x => ({role:x.role, text:x.text})),
+            context: getPssAiAppContext(),
+            instruction: 'Jawab apa sahaja soalan pengguna secara semula jadi dalam Bahasa Melayu Malaysia yang jelas, membantu dan tepat. Soalan quick button hanyalah cadangan dan tidak menghadkan skop chat. Jika soalan berkaitan DISPORA BOOK, PSS, rekod atau pelupusan, gunakan konteks aplikasi yang diberi. Jika soalan umum di luar DISPORA BOOK, tetap jawab secara normal selagi sesuai. Jangan mereka fakta borang rasmi; nyatakan ketidakpastian jika perlu. Jika pengguna meminta tindakan dalam aplikasi yang tidak boleh dilakukan terus, beri langkah yang tepat.'
         };
         const response = await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)});
-        if (!response.ok) throw new Error('HTTP '+response.status);
-        const data = await response.json();
+        const raw = await response.text();
+        let data = {};
+        try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {message: raw}; }
+        if (!response.ok) throw new Error(data?.error || data?.message || ('HTTP '+response.status));
         let answer = data?.answer || data?.reply || data?.message || data?.result?.answer || data?.result?.reply || data?.result?.text || data?.data?.answer || '';
         if (typeof answer !== 'string') answer = JSON.stringify(answer);
-        if (!answer) answer = getPssAiLocalReply(message);
+        if (!answer.trim()) throw new Error('AI_EMPTY_RESPONSE');
         if (typing) typing.remove();
         appendPssAiMessage(answer,'bot');
+        pushPssAiHistory('assistant', answer);
         if (typeof updateGeminiUiStatus === 'function') updateGeminiUiStatus(true);
     } catch (error) {
         console.warn('Pengawas PSS AI backend:', error);
         if (typing) typing.remove();
-        appendPssAiMessage(getPssAiLocalReply(message) + '\n\nNota: Backend AI tidak dapat dihubungi buat masa ini.','bot');
+        const errorText = String(error?.message || error || 'Ralat tidak diketahui');
+        const fallback = getPssAiLocalReply(message);
+        const diagnostic = `\n\n_Status sambungan AI: ${errorText}_`;
+        const reply = fallback + diagnostic;
+        appendPssAiMessage(reply,'bot');
+        pushPssAiHistory('assistant', reply);
+        if (typeof updateGeminiUiStatus === 'function') updateGeminiUiStatus(false);
+        if (typeof showToast === 'function') showToast('❌ Chatbot AI gagal menghubungi Gemini: ' + errorText, 'error');
     } finally {
+        pssAiBusy = false;
         if (btn) btn.disabled = false;
         setTimeout(() => input?.focus(), 50);
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Jika sesi login Firebase masih aktif selepas refresh, kekalkan launcher tersedia.
+    loadPssAiHistory();
     setTimeout(function() {
         try {
             const key = (typeof STORAGE_KEYS !== 'undefined' && STORAGE_KEYS.USER) ? STORAGE_KEYS.USER : null;
