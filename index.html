@@ -2765,7 +2765,7 @@ Johor Darul Ta'zim.</textarea>
         // --- FIREBASE CONFIG ---
         // Gantikan nilai di bawah dengan config Web App dari Firebase Console.
         const firebaseConfig = {
-            apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
+             apiKey: "AIzaSyDaGuqzSFzSQhMzfnA9QYzyaGR9teKudCk",
   authDomain: "disposa-book.firebaseapp.com",
   projectId: "disposa-book",
   storageBucket: "disposa-book.firebasestorage.app",
@@ -4379,7 +4379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script type="module">
 // =========================================================
-// FIREBASE AI LOGIC DIRECT - KHAS UNTUK CHATBOT PENGAWAS PSS AI
+// FIREBASE AI LOGIC DIRECT + AUTO FALLBACK - CHATBOT PENGAWAS PSS AI
 // Tidak mengubah Auth, Firestore, Storage atau modul lama.
 // App Check: reCAPTCHA Enterprise (Web)
 // =========================================================
@@ -4420,9 +4420,7 @@ try {
         backend: new GoogleAIBackend()
     });
 
-    const model = getGenerativeModel(ai, {
-        model: "gemini-3.8-flash",
-        systemInstruction: `
+    const pssAiSystemInstruction = `
 Anda ialah Pengawas Pusat Sumber AI untuk aplikasi DISPORA BOOK di sekolah Malaysia.
 
 Arahan:
@@ -4432,8 +4430,38 @@ Arahan:
 - Jangan mereka fakta rasmi. Jika tidak pasti tentang kehendak rasmi borang/arkib, nyatakan dengan jelas bahawa maklumat perlu disemak.
 - Jangan dedahkan API key, token, kata laluan atau rahsia sistem.
 - Jika pengguna meminta tindakan yang tidak boleh dilakukan terus oleh chatbot, berikan langkah yang tepat.
-`
+`;
+
+    // Model utama + fallback automatik jika model utama sesak / terganggu.
+    const primaryModel = getGenerativeModel(ai, {
+        model: "gemini-3.7-flash",
+        systemInstruction: pssAiSystemInstruction
     });
+
+    const fallbackModel = getGenerativeModel(ai, {
+        model: "gemini-3.5-flash-lite",
+        systemInstruction: pssAiSystemInstruction
+    });
+
+    async function generateWithRetry(model, prompt, retries = 1) {
+        let lastError;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const result = await model.generateContent(prompt);
+                const response = result?.response;
+                const answer = response?.text ? response.text() : "";
+                if (!answer || !answer.trim()) throw new Error("AI_EMPTY_RESPONSE");
+                return answer.trim();
+            } catch (err) {
+                lastError = err;
+                const msg = String(err?.message || err || "");
+                const retryable = /high demand|500|503|temporar|fetch-error/i.test(msg);
+                if (!retryable || attempt >= retries) break;
+                await new Promise(resolve => setTimeout(resolve, 1200));
+            }
+        }
+        throw lastError;
+    }
 
     window.disporaAiAsk = async function(message, history = [], context = {}) {
         // Dapatkan token App Check baharu sebelum setiap permintaan Gemini.
@@ -4460,15 +4488,20 @@ ${message}
 Jawab soalan terkini secara terus. Jangan hadkan jawapan kepada soalan preset.
 `;
 
-        const result = await model.generateContent(prompt);
-        const response = result?.response;
-        const answer = response?.text ? response.text() : "";
+        try {
+            // Cuba model utama dahulu, dengan satu percubaan semula automatik.
+            return await generateWithRetry(primaryModel, prompt, 1);
+        } catch (primaryError) {
+            console.warn("Model utama gagal, cuba fallback:", primaryError);
 
-        if (!answer || !answer.trim()) {
-            throw new Error("AI_EMPTY_RESPONSE");
+            // Fallback automatik kepada model lebih ringan.
+            try {
+                return await generateWithRetry(fallbackModel, prompt, 1);
+            } catch (fallbackError) {
+                console.error("Fallback model juga gagal:", fallbackError);
+                throw fallbackError;
+            }
         }
-
-        return answer.trim();
     };
 
     window.disporaAiLogicReady = true;
