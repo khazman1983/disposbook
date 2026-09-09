@@ -4384,10 +4384,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // App Check: reCAPTCHA Enterprise (Web)
 // =========================================================
 import { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as getAppCheckToken } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app-check.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-ai.js";
 
-const DISPORA_RECAPTCHA_ENTERPRISE_SITE_KEY = "6Lcif7ItAAAAAD4E1wvjp0ZA9shKAy0Uy6nM06Bg";
+const DISPORA_RECAPTCHA_ENTERPRISE_SITE_KEY = "6Lcif7ItAAAAAD4E1wvjpOZA9shKAy0Uy6nM06Bg";
 
 window.disporaAiLogicReady = false;
 window.disporaAiLogicError = "";
@@ -4401,10 +4401,20 @@ try {
 
     const aiApp = initializeModularApp(cfg, "dispora-ai-logic");
 
-    initializeAppCheck(aiApp, {
+    const appCheck = initializeAppCheck(aiApp, {
         provider: new ReCaptchaEnterpriseProvider(DISPORA_RECAPTCHA_ENTERPRISE_SITE_KEY),
         isTokenAutoRefreshEnabled: true
     });
+
+    // Paksa token App Check yang sah sebelum Firebase AI Logic digunakan.
+    // Ini juga membantu mengelakkan token lama/cached selepas pertukaran key.
+    window.disporaRefreshAppCheck = async function() {
+        const tokenResult = await getAppCheckToken(appCheck, true);
+        if (!tokenResult || !tokenResult.token) {
+            throw new Error("APP_CHECK_TOKEN_TIDAK_DITERIMA");
+        }
+        return true;
+    };
 
     const ai = getAI(aiApp, {
         backend: new GoogleAIBackend()
@@ -4426,6 +4436,9 @@ Arahan:
     });
 
     window.disporaAiAsk = async function(message, history = [], context = {}) {
+        // Dapatkan token App Check baharu sebelum setiap permintaan Gemini.
+        await window.disporaRefreshAppCheck();
+
         const safeHistory = Array.isArray(history) ? history.slice(-10) : [];
         const historyText = safeHistory.map(item => {
             const role = item?.role === "user" ? "Pengguna" : "Pengawas PSS AI";
@@ -4647,7 +4660,10 @@ async function sendPssAiMessage(event) {
         console.warn('Pengawas PSS AI Firebase AI Logic:', error);
         if (typing) typing.remove();
 
-        const errorText = String(error?.message || error || 'Ralat tidak diketahui');
+        let errorText = String(error?.message || error || 'Ralat tidak diketahui');
+        if (/app.?check|401|token is invalid/i.test(errorText)) {
+            errorText += '\nApp Check gagal disahkan. Pastikan laman dibuka melalui https://khazman1983.github.io/disposbook/ dan buat hard refresh (Ctrl+Shift+R).';
+        }
         const reply =
             'Saya tidak dapat menghubungi Gemini melalui Firebase AI Logic buat masa ini.' +
             '\n\n_Status sambungan AI: ' + errorText + '_';
