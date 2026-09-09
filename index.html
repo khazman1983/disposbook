@@ -2771,8 +2771,9 @@ Johor Darul Ta'zim.</textarea>
   storageBucket: "disposa-book.firebasestorage.app",
   messagingSenderId: "769902155620",
   appId: "1:769902155620:web:dec49312750ce353ef8c71",
-
         };
+        // Digunakan oleh Firebase AI Logic modular SDK tanpa mengubah Firebase compat sedia ada.
+        window.disporaFirebaseConfig = firebaseConfig;
 
         // Login menggunakan Email + Kata Laluan yang didaftarkan dalam Firebase Authentication.
         // Email dan kata laluan Admin tidak disimpan dalam HTML.
@@ -4375,10 +4376,101 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 
+
+<script type="module">
+// =========================================================
+// FIREBASE AI LOGIC DIRECT - KHAS UNTUK CHATBOT PENGAWAS PSS AI
+// Tidak mengubah Auth, Firestore, Storage atau modul lama.
+// App Check: reCAPTCHA Enterprise (Web)
+// =========================================================
+import { initializeApp as initializeModularApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app-check.js";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-ai.js";
+
+const DISPORA_RECAPTCHA_ENTERPRISE_SITE_KEY = "6Lcif7ItAAAAAD4E1wvjp0ZA9shKAy0Uy6nM06Bg";
+
+window.disporaAiLogicReady = false;
+window.disporaAiLogicError = "";
+
+try {
+    const cfg = window.disporaFirebaseConfig;
+
+    if (!cfg || !cfg.apiKey || !cfg.projectId) {
+        throw new Error("FIREBASE_CONFIG_TIDAK_LENGKAP");
+    }
+
+    const aiApp = initializeModularApp(cfg, "dispora-ai-logic");
+
+    initializeAppCheck(aiApp, {
+        provider: new ReCaptchaEnterpriseProvider(DISPORA_RECAPTCHA_ENTERPRISE_SITE_KEY),
+        isTokenAutoRefreshEnabled: true
+    });
+
+    const ai = getAI(aiApp, {
+        backend: new GoogleAIBackend()
+    });
+
+    const model = getGenerativeModel(ai, {
+        model: "gemini-3.8-flash",
+        systemInstruction: `
+Anda ialah Pengawas Pusat Sumber AI untuk aplikasi DISPORA BOOK di sekolah Malaysia.
+
+Arahan:
+- Jawab dalam Bahasa Melayu Malaysia yang jelas, sopan, praktikal dan mudah difahami.
+- Pengguna boleh bertanya apa sahaja; butang soalan cepat hanyalah cadangan.
+- Jika soalan berkaitan DISPORA BOOK, bantu tentang Rekod Buku, bahan bukan bercetak, Arkib 8/08, 9/08, 10/08, 12/08, Surat Iringan, rekod pelupusan dan pengurusan PSS.
+- Jangan mereka fakta rasmi. Jika tidak pasti tentang kehendak rasmi borang/arkib, nyatakan dengan jelas bahawa maklumat perlu disemak.
+- Jangan dedahkan API key, token, kata laluan atau rahsia sistem.
+- Jika pengguna meminta tindakan yang tidak boleh dilakukan terus oleh chatbot, berikan langkah yang tepat.
+`
+    });
+
+    window.disporaAiAsk = async function(message, history = [], context = {}) {
+        const safeHistory = Array.isArray(history) ? history.slice(-10) : [];
+        const historyText = safeHistory.map(item => {
+            const role = item?.role === "user" ? "Pengguna" : "Pengawas PSS AI";
+            return `${role}: ${String(item?.text || "").slice(0, 3000)}`;
+        }).join("\n");
+
+        const contextText = JSON.stringify(context || {}, null, 2).slice(0, 7000);
+
+        const prompt = `
+KONTEKS APLIKASI:
+${contextText}
+
+SEJARAH PERBUALAN:
+${historyText || "(Tiada sejarah terdahulu)"}
+
+SOALAN TERKINI PENGGUNA:
+${message}
+
+Jawab soalan terkini secara terus. Jangan hadkan jawapan kepada soalan preset.
+`;
+
+        const result = await model.generateContent(prompt);
+        const response = result?.response;
+        const answer = response?.text ? response.text() : "";
+
+        if (!answer || !answer.trim()) {
+            throw new Error("AI_EMPTY_RESPONSE");
+        }
+
+        return answer.trim();
+    };
+
+    window.disporaAiLogicReady = true;
+    console.info("Firebase AI Logic untuk Pengawas PSS AI sedia.");
+} catch (error) {
+    window.disporaAiLogicReady = false;
+    window.disporaAiLogicError = String(error?.message || error || "AI_INIT_ERROR");
+    console.error("Firebase AI Logic init error:", error);
+}
+</script>
+
 <script>
 // =========================================================
 // PENGAWAS PSS AI - MOD PENUH
-// Chat sebenar melalui backend Gemini selamat, multi-turn history,
+// Chat terus melalui Firebase AI Logic + Gemini, multi-turn history,
 // konteks modul semasa. Semua soalan pengguna dihantar ke Gemini; soalan cepat hanyalah cadangan.
 // =========================================================
 let pssAiGreetingShown = false;
@@ -4514,59 +4606,58 @@ function getPssAiAppContext() {
 async function sendPssAiMessage(event) {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
     if (pssAiBusy) return;
+
     const input = document.getElementById('pssAiInput');
     const btn = document.getElementById('pssAiSendBtn');
     const message = (input?.value || '').trim();
     if (!message) return;
 
-    appendPssAiMessage(message,'user');
+    appendPssAiMessage(message, 'user');
     pushPssAiHistory('user', message);
+
     if (input) input.value = '';
     if (btn) btn.disabled = true;
     pssAiBusy = true;
-    const typing = appendPssAiMessage('Pengawas PSS AI sedang berfikir...','bot','typing');
+
+    const typing = appendPssAiMessage('Pengawas PSS AI sedang berfikir...', 'bot', 'typing');
 
     try {
-        const url = (typeof getGeminiBackendUrl === 'function') ? getGeminiBackendUrl() : '';
-        if (!url) throw new Error('BACKEND_NOT_CONFIGURED');
+        if (typeof window.disporaAiAsk !== 'function') {
+            const initError = window.disporaAiLogicError || 'Firebase AI Logic belum bersedia';
+            throw new Error(initError);
+        }
 
-        const headers = (typeof getGeminiAuthHeaders === 'function') ? await getGeminiAuthHeaders() : {'Content-Type':'application/json'};
-        const payload = {
-            action: 'chat_assistant',
-            source: 'DISPORA_BOOK',
-            assistant_role: 'Pengawas Pusat Sumber AI',
-            language: 'ms-MY',
-            chatMode: 'free_chat',
-            allowGeneralQuestions: true,
+        // Sejarah sebelum mesej semasa sahaja supaya soalan terkini tidak diduplikasi.
+        const history = pssAiHistory
+            .slice(0, -1)
+            .slice(-12)
+            .map(x => ({ role: x.role, text: x.text }));
+
+        const answer = await window.disporaAiAsk(
             message,
-            // Hantar sejarah sebelum mesej semasa sahaja; elak mesej pengguna diduplikasi di backend.
-            history: pssAiHistory.slice(0, -1).slice(-12).map(x => ({role:x.role, text:x.text})),
-            context: getPssAiAppContext(),
-            instruction: 'Jawab apa sahaja soalan pengguna secara semula jadi dalam Bahasa Melayu Malaysia yang jelas, membantu dan tepat. Soalan quick button hanyalah cadangan dan tidak menghadkan skop chat. Jika soalan berkaitan DISPORA BOOK, PSS, rekod atau pelupusan, gunakan konteks aplikasi yang diberi. Jika soalan umum di luar DISPORA BOOK, tetap jawab secara normal selagi sesuai. Jangan mereka fakta borang rasmi; nyatakan ketidakpastian jika perlu. Jika pengguna meminta tindakan dalam aplikasi yang tidak boleh dilakukan terus, beri langkah yang tepat.'
-        };
-        const response = await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)});
-        const raw = await response.text();
-        let data = {};
-        try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {message: raw}; }
-        if (!response.ok) throw new Error(data?.error || data?.message || ('HTTP '+response.status));
-        let answer = data?.answer || data?.reply || data?.message || data?.result?.answer || data?.result?.reply || data?.result?.text || data?.data?.answer || '';
-        if (typeof answer !== 'string') answer = JSON.stringify(answer);
-        if (!answer.trim()) throw new Error('AI_EMPTY_RESPONSE');
+            history,
+            getPssAiAppContext()
+        );
+
         if (typing) typing.remove();
-        appendPssAiMessage(answer,'bot');
+        appendPssAiMessage(answer, 'bot');
         pushPssAiHistory('assistant', answer);
-        if (typeof updateGeminiUiStatus === 'function') updateGeminiUiStatus(true);
+
     } catch (error) {
-        console.warn('Pengawas PSS AI backend:', error);
+        console.warn('Pengawas PSS AI Firebase AI Logic:', error);
         if (typing) typing.remove();
+
         const errorText = String(error?.message || error || 'Ralat tidak diketahui');
-        const fallback = getPssAiLocalReply(message);
-        const diagnostic = `\n\n_Status sambungan AI: ${errorText}_`;
-        const reply = fallback + diagnostic;
-        appendPssAiMessage(reply,'bot');
+        const reply =
+            'Saya tidak dapat menghubungi Gemini melalui Firebase AI Logic buat masa ini.' +
+            '\n\n_Status sambungan AI: ' + errorText + '_';
+
+        appendPssAiMessage(reply, 'bot');
         pushPssAiHistory('assistant', reply);
-        if (typeof updateGeminiUiStatus === 'function') updateGeminiUiStatus(false);
-        if (typeof showToast === 'function') showToast('❌ Chatbot AI gagal menghubungi Gemini: ' + errorText, 'error');
+
+        if (typeof showToast === 'function') {
+            showToast('❌ Firebase AI Logic gagal: ' + errorText, 'error');
+        }
     } finally {
         pssAiBusy = false;
         if (btn) btn.disabled = false;
